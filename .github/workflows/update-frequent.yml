@@ -27,7 +27,9 @@ jobs:
           key: argos-${{ github.run_id }}
           restore-keys: argos-
       - name: Install translation engine
-        run: pip install --quiet ctranslate2 sentencepiece langdetect
+        run: |
+          pip install --quiet ctranslate2 sentencepiece sacremoses langdetect
+          pip install --quiet --no-deps argostranslate==1.11.0
       - name: Fetch, translate and build
         run: python scripts/tracker.py ransomware alerts news translate build
       - name: Commit data

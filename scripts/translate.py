@@ -2,8 +2,9 @@
 
 Uses free, open-source Argos Translate models (OpenNMT / CTranslate2) run
 locally on the GitHub runner: no API key, no text sent to a third party.
-Only the inference engine (ctranslate2 + sentencepiece) is installed, not the
-full argostranslate package. Language detection uses `langdetect`.
+Only the inference engine (ctranslate2) and Argos's tokenizer module are used
+(argostranslate installed with --no-deps, plus sentencepiece and sacremoses),
+not the full package with its heavy sentence-splitting dependencies. Language detection uses `langdetect`.
 
 Each translated field keeps its original text in `<field>_original` and its
 source language (ISO code) in `<field>_lang`. Translations are cached in
@@ -48,7 +49,7 @@ _models = {}
 
 
 def _key(lang, text):
-    return hashlib.sha1(f"v2|{lang}|{text}".encode()).hexdigest()[:20]
+    return hashlib.sha1(f"v3|{lang}|{text}".encode()).hexdigest()[:20]
 
 
 _why = {}  # lang -> reason a model could not be loaded
@@ -75,11 +76,15 @@ def _find_model_dir(root):
     return None
 
 
-def _find_sp(root):
-    for d, _, files in os.walk(root):
-        for f in files:
-            if f.endswith(".model") and ("sentencepiece" in f or f in ("bpe.model", "spm.model", "source.spm")):
-                return os.path.join(d, f)
+def _tokenizer(pkg_root, lang):
+    """Argos packages ship either a SentencePiece model or a Moses+BPE model."""
+    from argostranslate.tokenizer import BPETokenizer, SentencePieceTokenizer  # light: no stanza
+    from pathlib import Path
+    sp, bpe = os.path.join(pkg_root, "sentencepiece.model"), os.path.join(pkg_root, "bpe.model")
+    if os.path.exists(sp):
+        return SentencePieceTokenizer(Path(sp))
+    if os.path.exists(bpe):
+        return BPETokenizer(Path(bpe), lang, "en")
     return None
 
 
@@ -88,7 +93,6 @@ def model(lang):
     if lang in _models:
         return _models[lang]
     import ctranslate2
-    import sentencepiece as spm
 
     pkg = available().get(lang)
     if not pkg:
@@ -111,8 +115,9 @@ def model(lang):
             _models[lang] = None
             return None
         zipfile.ZipFile(io.BytesIO(blob)).extractall(folder)
-    mdir, spath = _find_model_dir(folder), _find_sp(folder)
-    if not mdir or not spath:
+    mdir = _find_model_dir(folder)
+    tok = _tokenizer(os.path.dirname(mdir), lang) if mdir else None
+    if not mdir or not tok:
         files = [os.path.relpath(os.path.join(d, f), folder) for d, _, fs in os.walk(folder) for f in fs][:12]
         _why[lang] = f"unexpected package layout: {files}"
         _models[lang] = None
@@ -126,12 +131,12 @@ def model(lang):
                 pass
     try:
         tr = ctranslate2.Translator(mdir, device="cpu", compute_type="int8", inter_threads=2, intra_threads=2)
-        sp = spm.SentencePieceProcessor(model_file=spath)
+        tok.encode("test")  # loads the tokenizer now, so a bad file fails here
     except Exception as e:
         _why[lang] = f"load failed: {str(e)[:120]}"
         _models[lang] = None
         return None
-    _models[lang] = (tr, sp, prefix)
+    _models[lang] = (tr, tok, prefix)
     return _models[lang]
 
 
@@ -143,7 +148,7 @@ def translate_texts(lang, texts):
     m = model(lang)
     if not m:
         return None
-    tr, sp, prefix = m
+    tr, tok, prefix = m
     pieces, owners = [], []
     for i, t in enumerate(texts):
         for s in _SPLIT.split(t.strip()) or [t]:
@@ -157,7 +162,7 @@ def translate_texts(lang, texts):
                 pieces.append(s); owners.append(i)
     if not pieces:
         return texts
-    toks = sp.encode(pieces, out_type=str)
+    toks = [tok.encode(p) for p in pieces]
     kw = {"target_prefix": [[prefix]] * len(toks)} if prefix else {}
     res = tr.translate_batch(toks, beam_size=2, max_batch_size=32, max_decoding_length=256, **kw)
     out = [[] for _ in texts]
@@ -165,8 +170,7 @@ def translate_texts(lang, texts):
         hyp = r.hypotheses[0]
         if prefix and hyp and hyp[0] == prefix:
             hyp = hyp[1:]
-        # target pieces are SentencePiece tokens: "▁" marks a word start
-        out[owner].append("".join(hyp).replace("\u2581", " ").strip())
+        out[owner].append(re.sub(r"\s+", " ", tok.decode(hyp)).strip())
     return [" ".join(o).strip() or texts[i] for i, o in enumerate(out)]
 
 
