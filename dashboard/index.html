@@ -1,0 +1,728 @@
+<style>
+#dash-root { --dash-gutter: var(--cds-pad-lg); }
+.cw { font-family: var(--font-anthropic-sans); color: var(--color-fg); display: flex; flex-direction: column; gap: var(--cds-gap-lg); max-width: 84rem; margin-inline: auto; }
+.cw-head { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); align-items: flex-end; justify-content: space-between; }
+.cw-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.cw-lede { margin: var(--cds-gap-xs) 0 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); max-width: 62ch; line-height: 1.5; }
+.cw-lede b { color: var(--color-fg); font-weight: 600; }
+.cw-scope { display: inline-flex; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 2px; gap: 2px; background: var(--color-panel); }
+.cw-scope button { font: inherit; font-size: var(--cds-font-size-caption); border: 0; background: transparent; color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-md); border-radius: 999px; cursor: pointer; }
+.cw-scope button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); }
+.cw-scope button:focus-visible, .cw-tabs button:focus-visible, .cw th button:focus-visible { outline: 2px solid var(--cds-chart-reference); outline-offset: 2px; }
+.cw-tabs { display: flex; gap: var(--cds-gap-xs); overflow-x: auto; border-bottom: 1px solid var(--color-border-line); }
+.cw-tabs button { font: inherit; font-size: var(--cds-font-size-body); background: none; border: 0; border-bottom: 2px solid transparent; color: var(--color-fg-muted); padding: var(--cds-pad-sm) var(--cds-pad-md); cursor: pointer; white-space: nowrap; }
+.cw-tabs button[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); }
+.cw-page { display: flex; flex-direction: column; gap: var(--cds-gap-md); }
+.cw-page[hidden] { display: none; }
+.cw-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr)); gap: var(--cds-gap-md); }
+.cw-kpi { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-xs); min-height: 8.5rem; }
+.cw-kpi-label { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cw-kpi-value { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2.4rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.cw-kpi-sub { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.cw-up { color: var(--color-bad); } .cw-down { color: var(--color-ok); }
+.cw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+.cw-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+.cw-card.wide { grid-column: 1 / -1; }
+.cw-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.cw-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; line-height: 1.45; }
+.cw-chart { position: relative; min-height: 220px; }
+.cw-map { position: relative; min-height: 300px; }
+.cw-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; }
+.cw-tip .k { color: var(--cds-text-secondary); }
+.cw-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.cw-legend i { display: inline-block; width: .7rem; height: .7rem; border-radius: 2px; margin-right: .35rem; vertical-align: -1px; }
+.cw-tools { display: flex; flex-wrap: wrap; gap: var(--cds-gap-sm); align-items: center; }
+.cw-tools input { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); color: var(--color-fg); min-width: 0; flex: 1 1 14rem; max-width: 22rem; }
+.cw-count { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.cw-tablebox { max-height: 34rem; overflow: auto; border-top: 1px solid var(--color-border-line); }
+.cw table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); }
+.cw th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); border-bottom: 1px solid var(--color-border-line); padding: 0; z-index: 1; }
+.cw th button { font: inherit; background: none; border: 0; color: var(--color-fg-muted); padding: var(--cds-pad-sm); cursor: pointer; width: 100%; text-align: left; white-space: nowrap; }
+.cw th[aria-sort="ascending"] button::after { content: " ↑"; } .cw th[aria-sort="descending"] button::after { content: " ↓"; }
+.cw td { padding: var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: top; line-height: 1.4; }
+.cw td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.cw td.date { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--color-fg-muted); }
+.cw td.clip { max-width: 28rem; }
+.cw td a { color: inherit; text-decoration-color: var(--color-border-line); text-underline-offset: 2px; }
+.cw .pill { display: inline-block; font-size: .72rem; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--color-border-line); color: var(--color-fg-muted); white-space: nowrap; }
+.cw .pill.bad { color: var(--color-bad); border-color: currentColor; }
+.cw .pill.ok { color: var(--color-ok); border-color: currentColor; }
+.cw .pill.warn { color: var(--color-warn); border-color: currentColor; }
+.cw .hide-narrow { }
+@media (max-width: 640px) { .cw .hide-narrow { display: none; } }
+.cw-fail { display: flex; align-items: center; justify-content: center; gap: .5rem; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); min-height: inherit; }
+.cw-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.cw [data-dash-source-state=empty] { color: transparent; }
+.cw [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.cw-def { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; margin: 0; }
+.cw-def b { color: var(--color-fg); font-weight: 600; }
+</style>
+
+<div class="cw" id="cw">
+  <header class="cw-head" id="top">
+    <div>
+      <h1 class="cw-title">Europe Cyber Watch</h1>
+      <p class="cw-lede" id="lede" data-source="headline"><span class="dash-skeleton">—</span></p>
+    </div>
+    <div class="cw-scope" role="group" aria-label="Region">
+      <button type="button" data-scope="europe" aria-pressed="true">Europe</button>
+      <button type="button" data-scope="eu27" aria-pressed="false">EU27</button>
+      <button type="button" data-scope="world" aria-pressed="false">World</button>
+    </div>
+  </header>
+
+  <nav class="cw-tabs" role="tablist" aria-label="Sections">
+    <button type="button" role="tab" data-tab="overview" aria-selected="true">Overview</button>
+    <button type="button" role="tab" data-tab="ransomware" aria-selected="false">Ransomware claims</button>
+    <button type="button" role="tab" data-tab="attacks" aria-selected="false">Reported attacks</button>
+    <button type="button" role="tab" data-tab="vulns" aria-selected="false">Exploited vulnerabilities</button>
+    <button type="button" role="tab" data-tab="alerts" aria-selected="false">Alerts and news</button>
+    <button type="button" role="tab" data-tab="history" aria-selected="false">History</button>
+    <button type="button" role="tab" data-tab="sources" aria-selected="false">Sources</button>
+  </nav>
+
+  <!-- ============ OVERVIEW ============ -->
+  <section class="cw-page" id="overview" data-page="overview">
+    <div class="cw-kpis">
+      <div class="cw-kpi" id="kpi-claims">
+        <span class="cw-kpi-label">Ransomware claims · last 7 days</span>
+        <span class="cw-kpi-value dash-skeleton" data-source="headline" data-field="claims_7d" data-where="scope=europe">—</span>
+        <span class="cw-kpi-sub" id="kpi-claims-delta"></span>
+      </div>
+      <div class="cw-kpi" id="kpi-attacks">
+        <span class="cw-kpi-label">Reported attacks · last 7 days</span>
+        <span class="cw-kpi-value dash-skeleton" data-source="headline" data-field="incidents_7d" data-where="scope=europe">—</span>
+        <span class="cw-kpi-sub">From press and company disclosures</span>
+      </div>
+      <div class="cw-kpi" id="kpi-vulns">
+        <span class="cw-kpi-label">Newly exploited flaws · last 7 days</span>
+        <span class="cw-kpi-value dash-skeleton" data-source="headline" data-field="vulns_7d" data-where="scope=europe">—</span>
+        <span class="cw-kpi-sub" id="kpi-vulns-sub">Worldwide, CISA KEV</span>
+      </div>
+      <div class="cw-kpi" id="kpi-alerts">
+        <span class="cw-kpi-label">Official alerts · last 7 days</span>
+        <span class="cw-kpi-value dash-skeleton" data-source="headline" data-field="alerts_7d" data-where="scope=europe">—</span>
+        <span class="cw-kpi-sub">CERT-EU and national CERTs</span>
+      </div>
+    </div>
+
+    <div class="cw-grid">
+      <article class="cw-card" id="map-card">
+        <h2>Where ransomware victims are in Europe</h2>
+        <p class="cw-note">Claims per country, last 30 days. Victim location, not attacker. Each square is a country.</p>
+        <div class="cw-map" id="map" data-source="by_country"></div>
+      </article>
+      <article class="cw-card" id="countries-card">
+        <h2 id="countries-title">Most-hit countries</h2>
+        <p class="cw-note">Ransomware claims per victim country, last 30 days.</p>
+        <div class="cw-chart" id="countries" data-source="by_country"></div>
+      </article>
+      <article class="cw-card wide" id="weekly-card">
+        <h2>Ransomware claims per week</h2>
+        <p class="cw-note">Europe's share of all leak-site claims worldwide. Weeks start Monday; the latest week is still filling.</p>
+        <div class="cw-legend"><span><i style="background: var(--cds-chart-muted)"></i>Rest of world</span><span><i id="lg-eu"></i>Europe</span></div>
+        <div class="cw-chart" id="weekly" data-source="weekly_claims"></div>
+      </article>
+    </div>
+    <p class="cw-def"><b>Claim</b> = a victim named on a ransomware group's leak site; not independently confirmed. <b>Reported attack</b> = an incident covered by the press or disclosed by the victim. <b>Exploited flaw</b> = a vulnerability confirmed as used in real attacks. These are separate counts and are never added together.</p>
+  </section>
+
+  <!-- ============ RANSOMWARE ============ -->
+  <section class="cw-page" id="ransomware" data-page="ransomware" hidden>
+    <div class="cw-grid">
+      <article class="cw-card" id="sectors-card">
+        <h2>Sectors named</h2>
+        <p class="cw-note">Ransomware claims by victim sector, last 30 days.</p>
+        <div class="cw-chart" id="sectors" data-source="by_sector"></div>
+      </article>
+      <article class="cw-card" id="groups-card">
+        <h2>Most active groups</h2>
+        <p class="cw-note">Claims per ransomware group, last 30 days.</p>
+        <div class="cw-chart" id="groups" data-source="by_group"></div>
+      </article>
+      <article class="cw-card wide" id="claims-card">
+        <h2>All claims</h2>
+        <p class="cw-note">Last 30 days, newest first. "Seen in" shows which trackers listed it; two sources is stronger, but still a claim.</p>
+        <div class="cw-tools"><input type="search" id="claims-q" placeholder="Search victim, group, country, sector" aria-label="Search claims"><span class="cw-count" id="claims-n"></span></div>
+        <div class="cw-tablebox">
+          <table id="claims-table" data-source="claims" data-row-key="id">
+            <thead><tr>
+              <th data-field="date"><button type="button">Date</button></th>
+              <th data-field="victim"><button type="button">Victim</button></th>
+              <th data-field="group"><button type="button">Group</button></th>
+              <th data-field="country_name"><button type="button">Country</button></th>
+              <th data-field="sector" class="hide-narrow"><button type="button">Sector</button></th>
+              <th data-field="seen_in" class="hide-narrow"><button type="button">Seen in</button></th>
+            </tr></thead><tbody></tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ ATTACKS ============ -->
+  <section class="cw-page" id="attacks" data-page="attacks" hidden>
+    <article class="cw-card" id="attacks-card">
+      <h2>Reported cyberattacks</h2>
+      <p class="cw-note">Incidents covered by the press or disclosed by the victim, last 90 days. Summaries are in the source's language.</p>
+      <div class="cw-tools"><input type="search" id="attacks-q" placeholder="Search victim, country, summary" aria-label="Search attacks"><span class="cw-count" id="attacks-n"></span></div>
+      <div class="cw-tablebox">
+        <table id="attacks-table" data-source="incidents" data-row-key="id">
+          <thead><tr>
+            <th data-field="date"><button type="button">Date</button></th>
+            <th data-field="title"><button type="button">Incident</button></th>
+            <th data-field="country_name"><button type="button">Country</button></th>
+            <th data-field="summary" class="hide-narrow"><button type="button">Summary</button></th>
+          </tr></thead><tbody></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ VULNS ============ -->
+  <section class="cw-page" id="vulns" data-page="vulns" hidden>
+    <article class="cw-card" id="vulns-card">
+      <h2>Vulnerabilities exploited in the wild</h2>
+      <p class="cw-note">Added to CISA's Known Exploited list in the last 90 days, worldwide. EPSS = chance of exploitation in the next 30 days. EUVD = the EU database ID, where ENISA lists it.</p>
+      <div class="cw-tools"><input type="search" id="vulns-q" placeholder="Search CVE, vendor, product" aria-label="Search vulnerabilities"><span class="cw-count" id="vulns-n"></span></div>
+      <div class="cw-tablebox">
+        <table id="vulns-table" data-source="vulns" data-row-key="id">
+          <thead><tr>
+            <th data-field="date"><button type="button">Added</button></th>
+            <th data-field="id"><button type="button">CVE</button></th>
+            <th data-field="vendor"><button type="button">Vendor</button></th>
+            <th data-field="product"><button type="button">Product</button></th>
+            <th data-field="epss"><button type="button">EPSS</button></th>
+            <th data-field="ransomware"><button type="button">Ransomware</button></th>
+            <th data-field="euvd_id" class="hide-narrow"><button type="button">EUVD</button></th>
+          </tr></thead><tbody></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ ALERTS & NEWS ============ -->
+  <section class="cw-page" id="alerts" data-page="alerts" hidden>
+    <div class="cw-grid">
+      <article class="cw-card wide" id="alerts-card">
+        <h2>Official alerts</h2>
+        <p class="cw-note">Advisories and news from CERT-EU and national cyber agencies, last 30 days. Titles are in each agency's language.</p>
+        <div class="cw-tools"><input type="search" id="alerts-q" placeholder="Search alerts" aria-label="Search alerts"><span class="cw-count" id="alerts-n"></span></div>
+        <div class="cw-tablebox">
+          <table id="alerts-table" data-source="alerts" data-row-key="id">
+            <thead><tr>
+              <th data-field="date"><button type="button">Date</button></th>
+              <th data-field="cert"><button type="button">Agency</button></th>
+              <th data-field="title"><button type="button">Alert</button></th>
+            </tr></thead><tbody></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="cw-card wide" id="news-card">
+        <h2>In the news</h2>
+        <p class="cw-note">Headlines about cyberattacks from the last two weeks, via GDELT. "Mentions" are countries named in the headline. Leads to check, not confirmed incidents.</p>
+        <div class="cw-tools"><input type="search" id="news-q" placeholder="Search headlines" aria-label="Search news"><span class="cw-count" id="news-n"></span></div>
+        <div class="cw-tablebox">
+          <table id="news-table" data-source="news" data-row-key="id">
+            <thead><tr>
+              <th data-field="date"><button type="button">Date</button></th>
+              <th data-field="title"><button type="button">Headline</button></th>
+              <th data-field="mentions"><button type="button">Mentions</button></th>
+              <th data-field="domain" class="hide-narrow"><button type="button">Outlet</button></th>
+            </tr></thead><tbody></tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section class="cw-page" id="history" data-page="history" hidden>
+    <article class="cw-card" id="history-card">
+      <h2>Two decades of significant incidents</h2>
+      <p class="cw-note">Expert-coded incidents per year from the EuRepoC Global Dataset, by when they started. EuRepoC records politically significant operations, not every attack. Licence: CC BY-NC 4.0.</p>
+      <div class="cw-legend"><span><i style="background: var(--cds-chart-muted)"></i>Rest of world</span><span><i id="lg-eu2"></i>Affecting Europe</span></div>
+      <div class="cw-chart" id="history-chart" data-source="eurepoc_years"></div>
+    </article>
+  </section>
+
+  <!-- ============ SOURCES ============ -->
+  <section class="cw-page" id="sources" data-page="sources" hidden>
+    <article class="cw-card" id="sources-card">
+      <h2>Data sources and health</h2>
+      <p class="cw-note">All data is collected by scheduled jobs in the GitHub repo cdragotta/cyber-attack-tracker, then copied here daily. Personal, non-commercial use.</p>
+      <div class="cw-tablebox">
+        <table id="sources-table" data-source="sources" data-row-key="source">
+          <thead><tr>
+            <th data-field="source"><button type="button">Source</button></th>
+            <th data-field="signal"><button type="button">Provides</button></th>
+            <th data-field="last_success"><button type="button">Last success</button></th>
+            <th data-field="records"><button type="button">Records</button></th>
+            <th data-field="error" class="hide-narrow"><button type="button">Status</button></th>
+            <th data-field="license" class="hide-narrow"><button type="button">Terms</button></th>
+          </tr></thead><tbody></tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+</div>
+
+<script>
+/* ---------- calculations (each returns rows for every region, so the region switch only redraws) ---------- */
+dash.calc('headline', {
+  title: 'Last-7-day counts by region',
+  description: 'Counts claims, reported attacks, alerts and exploited flaws in the 7 days up to the newest claim, for Europe, EU27 and the world.',
+  inputs: ['claims', 'incidents', 'alerts', 'vulns'],
+  fn: (claims, incidents, alerts, vulns) => {
+    const EUROPE = ['EU27', 'UK', 'Wider Europe'];
+    const inScope = (s, scope) => scope === 'world' ? true : scope === 'eu27' ? s === 'EU27' || s === 'EU' : EUROPE.includes(s) || s === 'EU';
+    const end = claims.reduce((m, r) => (r.date > m ? r.date : m), '');
+    const shift = (d, n) => new Date(Date.parse(d) - n * 864e5).toISOString().slice(0, 10);
+    const from = shift(end, 6), prevFrom = shift(end, 13);
+    const win = (rows, a, b) => rows.filter((r) => r.date >= a && r.date <= b);
+    return ['europe', 'eu27', 'world'].map((scope) => {
+      const c7 = win(claims, from, end).filter((r) => inScope(r.scope, scope));
+      const counts = {};
+      c7.forEach((r) => { if (r.country_name) counts[r.country_name] = (counts[r.country_name] || 0) + 1; });
+      const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] || ['', 0];
+      return {
+        scope, end, from,
+        claims_7d: c7.length,
+        claims_prev_7d: win(claims, prevFrom, shift(end, 7)).filter((r) => inScope(r.scope, scope)).length,
+        world_claims_7d: win(claims, from, end).length,
+        incidents_7d: win(incidents, from, end).filter((r) => inScope(r.scope, scope)).length,
+        alerts_7d: win(alerts, from, end).filter((r) => inScope(r.scope, scope)).length,
+        vulns_7d: win(vulns, from, end).length,
+        ransomware_vulns_7d: win(vulns, from, end).filter((r) => r.ransomware === true || r.ransomware === 'true').length,
+        top_country: top[0], top_country_n: top[1],
+      };
+    });
+  },
+});
+
+dash.calc('by_country', {
+  title: 'Claims by country and region',
+  description: 'Ransomware claims per victim country over the last 30 days, for Europe, EU27 and the world.',
+  inputs: ['claims'],
+  fn: (claims) => {
+    const EUROPE = ['EU27', 'UK', 'Wider Europe'];
+    const out = {};
+    claims.forEach((r) => {
+      if (!r.country) return;
+      const scopes = ['world'];
+      if (EUROPE.includes(r.scope)) scopes.push('europe');
+      if (r.scope === 'EU27') scopes.push('eu27');
+      scopes.forEach((s) => {
+        const key = s + '|' + r.country;
+        out[key] = out[key] || { key, scope: s, country: r.country, country_name: r.country_name, n: 0 };
+        out[key].n += 1;
+      });
+    });
+    return Object.values(out).sort((a, b) => b.n - a.n);
+  },
+});
+
+dash.calc('by_sector', {
+  title: 'Claims by sector and region',
+  description: 'Ransomware claims per victim sector over the last 30 days, for Europe, EU27 and the world.',
+  inputs: ['claims'],
+  fn: (claims) => {
+    const EUROPE = ['EU27', 'UK', 'Wider Europe'];
+    const out = {};
+    claims.forEach((r) => {
+      const scopes = ['world'];
+      if (EUROPE.includes(r.scope)) scopes.push('europe');
+      if (r.scope === 'EU27') scopes.push('eu27');
+      const sector = r.sector || 'Unknown';
+      scopes.forEach((s) => {
+        const key = s + '|' + sector;
+        out[key] = out[key] || { key, scope: s, sector, n: 0 };
+        out[key].n += 1;
+      });
+    });
+    return Object.values(out).sort((a, b) => b.n - a.n);
+  },
+});
+
+dash.calc('by_group', {
+  title: 'Claims by group and region',
+  description: 'Ransomware claims per group over the last 30 days, for Europe, EU27 and the world.',
+  inputs: ['claims'],
+  fn: (claims) => {
+    const EUROPE = ['EU27', 'UK', 'Wider Europe'];
+    const out = {};
+    claims.forEach((r) => {
+      if (!r.group) return;
+      const scopes = ['world'];
+      if (EUROPE.includes(r.scope)) scopes.push('europe');
+      if (r.scope === 'EU27') scopes.push('eu27');
+      scopes.forEach((s) => {
+        const key = s + '|' + r.group;
+        out[key] = out[key] || { key, scope: s, group: r.group, n: 0 };
+        out[key].n += 1;
+      });
+    });
+    return Object.values(out).sort((a, b) => b.n - a.n);
+  },
+});
+</script>
+
+<script>
+/* ---------- shared helpers ---------- */
+window.CW = (() => {
+  const EUROPE = ['EU27', 'UK', 'Wider Europe'];
+  const scope = () => dash.params().scope || 'europe';
+  const inScope = (s, sc = scope()) => sc === 'world' ? true : sc === 'eu27' ? s === 'EU27' || s === 'EU' : EUROPE.includes(s) || s === 'EU';
+  const fmt = d3.format(',');
+  const day = d3.utcFormat('%b %-d');
+  const fdate = (d) => (d ? day(new Date(d + 'T00:00:00Z')) : '');
+  const safeUrl = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u) ? u : '');
+  const scopeName = (sc = scope()) => ({ europe: 'Europe', eu27: 'the EU27', world: 'the world' })[sc];
+  const color = (token) => {
+    const p = document.createElement('span');
+    p.style.color = token; p.style.display = 'none';
+    document.getElementById('cw').appendChild(p);
+    const c = getComputedStyle(p).color; p.remove(); return c;
+  };
+  const fail = (el) => { el.replaceChildren(); const d = document.createElement('div'); d.className = 'cw-fail'; d.textContent = 'Failed to load'; el.appendChild(d); };
+  const state = (el, ...ids) => {
+    const st = ids.map((id) => dash.data(id).status);
+    if (st.includes('error')) { el.classList.remove('dash-skeleton'); fail(el); return false; }
+    if (st.some((s) => s !== 'ok')) { el.replaceChildren(); el.classList.add('dash-skeleton'); return false; }
+    el.classList.remove('dash-skeleton'); return true;
+  };
+  const tip = (box) => {
+    let t = box.querySelector('.cw-tip');
+    if (!t) { t = document.createElement('div'); t.className = 'cw-tip'; t.hidden = true; box.appendChild(t); }
+    return {
+      show(ev, lines) {
+        t.replaceChildren(...lines.map(([k, v], i) => { const d = document.createElement('div'); if (i === 0) { d.className = 'k'; d.textContent = k; } else { d.textContent = k + ': ' + v; } return d; }));
+        t.hidden = false;
+        const [x, y] = d3.pointer(ev, box), w = t.offsetWidth, bw = box.clientWidth;
+        t.style.left = Math.max(0, Math.min(bw - w, x + 12)) + 'px';
+        t.style.top = Math.max(0, y - t.offsetHeight - 8) + 'px';
+      },
+      hide() { t.hidden = true; },
+    };
+  };
+
+  /* horizontal bar list from calc rows */
+  const bars = (el, rows, labelKey, opts = {}) => {
+    const box = el; const keepTip = box.querySelector('.cw-tip');
+    box.replaceChildren(); if (keepTip) box.appendChild(keepTip);
+    const W = Math.max(280, box.clientWidth), rowH = 26, top = 4;
+    const data = rows.slice(0, opts.limit || 12);
+    if (!data.length) { const p = document.createElement('p'); p.className = 'cw-note'; p.textContent = 'No claims in this region in the last 30 days.'; box.appendChild(p); return; }
+    const H = top + data.length * rowH + 4;
+    const svg = d3.select(box).insert('svg', ':first-child').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', opts.label || 'Bar chart');
+    const meas = svg.append('text').attr('font-size', 12).attr('font-family', 'var(--font-anthropic-sans)');
+    const labelW = Math.min(W * 0.42, d3.max(data, (d) => { meas.text(d[labelKey]); return meas.node().getComputedTextLength(); }) + 10);
+    meas.remove();
+    const x = d3.scaleLinear([0, d3.max(data, (d) => d.n)], [0, W - labelW - 44]);
+    const g = svg.selectAll('g.row').data(data).join('g').attr('class', 'row').attr('transform', (d, i) => `translate(0,${top + i * rowH})`);
+    g.append('text').attr('x', labelW - 8).attr('y', rowH / 2 + 4).attr('text-anchor', 'end').attr('font-size', 12).attr('fill', 'var(--color-fg)')
+      .text((d) => { const s = String(d[labelKey]); return s.length > 28 ? s.slice(0, 27) + '…' : s; });
+    g.append('rect').attr('x', labelW).attr('y', 5).attr('height', rowH - 10).attr('rx', 4)
+      .attr('width', (d) => Math.max(2, x(d.n))).attr('fill', (d, i) => (i === 0 ? opts.accent || dash.colors[0] : 'var(--cds-chart-muted)'));
+    g.append('text').attr('x', (d) => labelW + Math.max(2, x(d.n)) + 6).attr('y', rowH / 2 + 4).attr('font-size', 12).attr('fill', 'var(--color-fg-muted)')
+      .style('font-variant-numeric', 'tabular-nums').text((d) => fmt(d.n));
+  };
+
+  /* sortable, searchable table */
+  const tables = {};
+  const table = (id, cfg) => {
+    const el = document.getElementById(id);
+    const st = (tables[id] = tables[id] || { sort: cfg.sort || ['date', -1], q: '' });
+    if (!st.wired) {
+      st.wired = true;
+      el.querySelectorAll('th').forEach((th) => th.querySelector('button').addEventListener('click', () => {
+        const f = th.dataset.field; st.sort = [f, st.sort[0] === f ? -st.sort[1] : (f === 'date' || f === 'epss' || f === 'records' ? -1 : 1)]; cfg.redraw();
+      }));
+      if (cfg.search) document.getElementById(cfg.search).addEventListener('input', (e) => { st.q = e.target.value.toLowerCase(); cfg.redraw(); });
+    }
+    el.querySelectorAll('th').forEach((th) => th.setAttribute('aria-sort', th.dataset.field === st.sort[0] ? (st.sort[1] > 0 ? 'ascending' : 'descending') : 'none'));
+    let rows = cfg.rows.filter((r) => !st.q || cfg.fields.some((f) => String(r[f] ?? '').toLowerCase().includes(st.q)));
+    const [f, dir] = st.sort;
+    rows = rows.slice().sort((a, b) => { const x = a[f] ?? '', y = b[f] ?? ''; return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y))) * dir; });
+    if (cfg.count) document.getElementById(cfg.count).textContent = fmt(rows.length) + (rows.length === 1 ? ' row' : ' rows');
+    const tb = el.querySelector('tbody');
+    tb.replaceChildren(...rows.slice(0, 600).map((r) => {
+      const tr = document.createElement('tr');
+      cfg.cells.forEach((c) => { const td = document.createElement('td'); if (c.cls) td.className = c.cls; c.fill(td, r); tr.appendChild(td); });
+      return tr;
+    }));
+  };
+  const link = (td, text, url) => {
+    const u = safeUrl(url);
+    if (!u) { td.textContent = text; return; }
+    const a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = text; td.appendChild(a);
+  };
+  const pill = (td, text, kind) => { const s = document.createElement('span'); s.className = 'pill' + (kind ? ' ' + kind : ''); s.textContent = text; td.appendChild(s); };
+  return { EUROPE, scope, inScope, fmt, fdate, safeUrl, scopeName, color, state, tip, bars, table, link, pill };
+})();
+</script>
+
+<script>
+/* ---------- region switch + tabs ---------- */
+(() => {
+  const btns = document.querySelectorAll('.cw-scope button');
+  btns.forEach((b) => b.addEventListener('click', () => dash.setParams({ scope: b.dataset.scope })));
+  const tabs = document.querySelectorAll('.cw-tabs button');
+  const pages = document.querySelectorAll('.cw-page');
+  window.CW.show = (name) => {
+    if (!document.getElementById(name)) name = 'overview';
+    tabs.forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+    pages.forEach((p) => { p.hidden = p.dataset.page !== name; });
+    window.CW.current = name;
+    if (window.CW.draw) window.CW.draw();
+  };
+  tabs.forEach((t) => t.addEventListener('click', () => { window.CW.show(t.dataset.tab); dash.setLink(t.dataset.tab); }));
+  const start = location.hash.slice(1);
+  window.CW.current = document.getElementById(start) && document.querySelector(`[data-page="${start}"]`) ? start : 'overview';
+  dash.onData(() => btns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.scope === window.CW.scope()))));
+})();
+</script>
+
+<script>
+/* ---------- overview ---------- */
+(() => {
+  const CW = window.CW;
+  // tile grid: [code, col, row]
+  const TILES = [
+    ['IS',0,0],['NO',4,0],['SE',5,0],['FI',6,0],
+    ['IE',1,1],['GB',2,1],['DK',4,1],['LV',6,1],['EE',7,1],
+    ['NL',3,2],['DE',4,2],['PL',5,2],['LT',6,2],
+    ['FR',2,3],['BE',3,3],['CZ',4,3],['SK',5,3],['UA',6,3],['MD',7,3],
+    ['PT',0,4],['ES',1,4],['LU',2,4],['CH',3,4],['AT',4,4],['HU',5,4],['RO',6,4],
+    ['IT',3,5],['SI',4,5],['HR',5,5],['RS',6,5],['BG',7,5],['GE',9,5],
+    ['MT',3,6],['BA',4,6],['ME',5,6],['XK',6,6],['MK',7,6],['TR',8,6],['AM',9,6],['AZ',10,6],
+    ['AL',5,7],['GR',6,7],['CY',8,7],
+  ];
+  const EU27 = 'AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE'.split(' ');
+
+  const drawHeadline = () => {
+    const sc = CW.scope();
+    const lede = document.getElementById('lede');
+    const h = dash.data('headline');
+    document.querySelectorAll('.cw-kpi-value').forEach((el) => el.setAttribute('data-where', 'scope=' + sc));
+    if (h.status !== 'ok') {
+      if (h.status === 'error') { lede.textContent = 'Some data failed to load. See Sources.'; }
+      document.querySelectorAll('.cw-kpi-value').forEach((el) => { el.textContent = '—'; });
+      return;
+    }
+    const r = h.data.find((x) => x.scope === sc);
+    if (!r) return;
+    document.querySelectorAll('.cw-kpi-value').forEach((el) => { el.classList.remove('dash-skeleton'); el.textContent = CW.fmt(r[el.dataset.field]); });
+    const d = r.claims_7d - r.claims_prev_7d;
+    const delta = document.getElementById('kpi-claims-delta');
+    delta.replaceChildren();
+    const s = document.createElement('span');
+    s.className = d > 0 ? 'cw-up' : d < 0 ? 'cw-down' : '';
+    s.textContent = (d > 0 ? '+' : d < 0 ? '−' : '±') + CW.fmt(Math.abs(d));
+    delta.append(s, ' vs the 7 days before');
+    document.getElementById('kpi-vulns-sub').textContent = `Worldwide, CISA KEV · ${CW.fmt(r.ransomware_vulns_7d)} used by ransomware`;
+    // takeaway sentence
+    const b = (txt, field) => { const e = document.createElement('b'); e.textContent = txt; e.dataset.source = 'headline'; e.dataset.field = field; e.dataset.where = 'scope=' + sc; return e; };
+    lede.replaceChildren();
+    const range = `${CW.fdate(r.from)}–${CW.fdate(r.end)}`;
+    if (sc === 'world') {
+      lede.append(`${range}: `, b(CW.fmt(r.claims_7d), 'claims_7d'), ' ransomware claims worldwide');
+    } else {
+      const share = r.world_claims_7d ? Math.round((100 * r.claims_7d) / r.world_claims_7d) : 0;
+      lede.append(`${range}: `, b(CW.fmt(r.claims_7d), 'claims_7d'), ` ransomware claims named victims in ${CW.scopeName(sc)}, ${share}% of the world total`);
+    }
+    if (r.top_country) lede.append('. ', b(r.top_country, 'top_country'), ' was named most, ', b(CW.fmt(r.top_country_n), 'top_country_n'), ' times.');
+    else lede.append('.');
+  };
+
+  const drawMap = () => {
+    const box = document.getElementById('map');
+    if (!CW.state(box, 'claims')) return;
+    const rows = dash.data('by_country').data || [];
+    const by = new Map(rows.filter((r) => r.scope === 'europe').map((r) => [r.country, r]));
+    const sc = CW.scope();
+    const keepTip = box.querySelector('.cw-tip'); box.replaceChildren(); if (keepTip) box.appendChild(keepTip);
+    const W = Math.max(300, box.clientWidth), cols = 11, rowsN = 8, gap = 4;
+    const s = Math.min(58, (W - gap * (cols - 1)) / cols), H = rowsN * (s + gap);
+    const max = d3.max(rows.filter((r) => r.scope === 'europe'), (r) => r.n) || 1;
+    const lo = CW.color('var(--color-panel)'), hi = CW.color(dash.colors[0]);
+    const ramp = d3.scaleSqrt([0, max], [0.12, 1]);
+    const mix = d3.interpolateRgb(lo, hi);
+    const svg = d3.select(box).insert('svg', ':first-child').attr('width', '100%').attr('viewBox', `0 0 ${cols * (s + gap)} ${H}`).attr('role', 'img').attr('aria-label', 'Tile map of ransomware claims per European country');
+    const t = CW.tip(box);
+    TILES.forEach(([cc, c, r]) => {
+      const d = by.get(cc); const n = d ? d.n : 0;
+      const dim = sc === 'eu27' && !EU27.includes(cc);
+      const g = svg.append('g').attr('transform', `translate(${c * (s + gap)},${r * (s + gap)})`).style('opacity', dim ? 0.3 : 1);
+      g.append('rect').attr('width', s).attr('height', s).attr('rx', 6)
+        .attr('fill', n ? mix(ramp(n)) : 'var(--color-panel)').attr('stroke', 'var(--color-border-line)');
+      const dark = n && ramp(n) > 0.55;
+      g.append('text').attr('x', 6).attr('y', 15).attr('font-size', 11).attr('font-weight', 600).attr('fill', dark ? 'var(--color-bg)' : 'var(--color-fg)').text(cc);
+      const num = g.append('text').attr('x', s - 6).attr('y', s - 7).attr('text-anchor', 'end').attr('font-size', 12)
+        .style('font-variant-numeric', 'tabular-nums').attr('fill', dark ? 'var(--color-bg)' : 'var(--color-fg-muted)').text(n ? CW.fmt(n) : '');
+      if (d) num.attr('data-source', 'by_country').attr('data-field', 'n').attr('data-where', 'key=' + encodeURIComponent(d.key));
+      g.on('mousemove', (ev) => t.show(ev, [[d ? d.country_name : cc, ''], ['Claims, 30 days', CW.fmt(n)]])).on('mouseleave', () => t.hide());
+    });
+  };
+
+  const drawCountries = () => {
+    const box = document.getElementById('countries');
+    if (!CW.state(box, 'claims')) return;
+    const sc = CW.scope();
+    document.getElementById('countries-title').textContent = sc === 'world' ? 'Most-hit countries worldwide' : `Most-hit countries in ${CW.scopeName(sc)}`;
+    const rows = (dash.data('by_country').data || []).filter((r) => r.scope === sc);
+    CW.bars(box, rows, 'country_name', { limit: 12, label: 'Claims by country' });
+  };
+
+  const drawWeekly = () => {
+    const box = document.getElementById('weekly');
+    document.getElementById('lg-eu').style.background = dash.colors[0];
+    if (!CW.state(box, 'weekly_claims')) return;
+    const keepTip = box.querySelector('.cw-tip'); box.replaceChildren(); if (keepTip) box.appendChild(keepTip);
+    const rows = (dash.data('weekly_claims').data || []).map((r) => ({ week: r.week, d: new Date(r.week + 'T00:00:00Z'), europe: +r.europe, world: +r.world }));
+    if (!rows.length) return;
+    const W = Math.max(300, box.clientWidth), H = 220, m = { t: 10, r: 8, b: 26, l: 40 };
+    const x = d3.scaleBand(rows.map((r) => r.week), [m.l, W - m.r]).padding(0.28);
+    const y = d3.scaleLinear([0, d3.max(rows, (r) => r.world) || 1], [H - m.b, m.t]).nice();
+    const svg = d3.select(box).insert('svg', ':first-child').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Weekly ransomware claims, Europe and world');
+    svg.append('g').selectAll('line').data(y.ticks(4)).join('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('text').data(y.ticks(4)).join('text').attr('x', m.l - 6).attr('y', (d) => y(d) + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(CW.fmt);
+    const step = Math.ceil(rows.length / Math.max(2, Math.floor(W / 70)));
+    svg.append('g').selectAll('text').data(rows.filter((r, i) => i % step === 0)).join('text').attr('x', (r) => x(r.week) + x.bandwidth() / 2).attr('y', H - 8).attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text((r) => CW.fdate(r.week));
+    const t = CW.tip(box);
+    const g = svg.append('g').selectAll('g').data(rows).join('g');
+    g.append('rect').attr('x', (r) => x(r.week)).attr('width', x.bandwidth()).attr('y', (r) => y(r.world)).attr('height', (r) => y(0) - y(r.world)).attr('rx', 4).attr('fill', 'var(--cds-chart-muted)');
+    g.append('rect').attr('x', (r) => x(r.week)).attr('width', x.bandwidth()).attr('y', (r) => y(r.europe)).attr('height', (r) => y(0) - y(r.europe)).attr('rx', 4).attr('fill', dash.colors[0]);
+    g.on('mousemove', (ev, r) => t.show(ev, [['Week of ' + CW.fdate(r.week), ''], ['Europe', CW.fmt(r.europe)], ['World', CW.fmt(r.world)], ['Europe share', r.world ? Math.round((100 * r.europe) / r.world) + '%' : '—']])).on('mouseleave', () => t.hide());
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'var(--cds-chart-axis)');
+  };
+
+  window.CW.drawOverview = () => { drawHeadline(); if (window.CW.current === 'overview') { drawMap(); drawCountries(); drawWeekly(); } };
+})();
+</script>
+
+<script>
+/* ---------- other pages ---------- */
+(() => {
+  const CW = window.CW;
+  const drawRansomware = () => {
+    const sc = CW.scope();
+    const sb = document.getElementById('sectors'), gb = document.getElementById('groups');
+    if (CW.state(sb, 'claims')) CW.bars(sb, (dash.data('by_sector').data || []).filter((r) => r.scope === sc && r.sector !== 'Unknown' && r.sector !== 'Not Found'), 'sector', { limit: 10, label: 'Claims by sector' });
+    if (CW.state(gb, 'claims')) CW.bars(gb, (dash.data('by_group').data || []).filter((r) => r.scope === sc), 'group', { limit: 10, label: 'Claims by group' });
+    const c = dash.data('claims');
+    if (c.status !== 'ok') return;
+    CW.table('claims-table', {
+      redraw: drawRansomware, search: 'claims-q', count: 'claims-n',
+      rows: c.data.filter((r) => CW.inScope(r.scope)),
+      fields: ['victim', 'group', 'country_name', 'sector', 'domain'],
+      cells: [
+        { cls: 'date', fill: (td, r) => { td.textContent = r.date; } },
+        { cls: 'clip', fill: (td, r) => CW.link(td, r.victim, r.url) },
+        { fill: (td, r) => { td.textContent = r.group; } },
+        { fill: (td, r) => { td.textContent = r.country_name || 'Unknown'; } },
+        { cls: 'hide-narrow', fill: (td, r) => { td.textContent = r.sector; } },
+        { cls: 'hide-narrow', fill: (td, r) => CW.pill(td, r.seen_in, String(r.seen_in).includes(',') ? 'warn' : '') },
+      ],
+    });
+  };
+  const drawAttacks = () => {
+    const c = dash.data('incidents'); if (c.status !== 'ok') return;
+    CW.table('attacks-table', {
+      redraw: drawAttacks, search: 'attacks-q', count: 'attacks-n',
+      rows: c.data.filter((r) => CW.inScope(r.scope)),
+      fields: ['title', 'victim', 'country_name', 'summary'],
+      cells: [
+        { cls: 'date', fill: (td, r) => { td.textContent = r.date; } },
+        { cls: 'clip', fill: (td, r) => CW.link(td, r.title, r.url) },
+        { fill: (td, r) => { td.textContent = r.country_name || 'Unknown'; } },
+        { cls: 'clip hide-narrow', fill: (td, r) => { td.textContent = r.summary; } },
+      ],
+    });
+  };
+  const drawVulns = () => {
+    const c = dash.data('vulns'); if (c.status !== 'ok') return;
+    CW.table('vulns-table', {
+      redraw: drawVulns, search: 'vulns-q', count: 'vulns-n',
+      rows: c.data.map((r) => ({ ...r, epss: r.epss === null || r.epss === '' ? null : Number(r.epss) })),
+      fields: ['id', 'vendor', 'product', 'name', 'euvd_id'],
+      cells: [
+        { cls: 'date', fill: (td, r) => { td.textContent = r.date; } },
+        { fill: (td, r) => CW.link(td, r.id, 'https://nvd.nist.gov/vuln/detail/' + encodeURIComponent(r.id)) },
+        { fill: (td, r) => { td.textContent = r.vendor; } },
+        { cls: 'clip', fill: (td, r) => { td.textContent = r.product; } },
+        { cls: 'num', fill: (td, r) => { td.textContent = r.epss === null ? '—' : d3.format('.1%')(r.epss); } },
+        { fill: (td, r) => { if (r.ransomware === true || r.ransomware === 'true') CW.pill(td, 'Known use', 'bad'); } },
+        { cls: 'hide-narrow', fill: (td, r) => { if (r.euvd_id) CW.link(td, r.euvd_id, 'https://euvd.enisa.europa.eu/vulnerability/' + encodeURIComponent(r.euvd_id)); } },
+      ],
+    });
+  };
+  const drawAlerts = () => {
+    const a = dash.data('alerts');
+    if (a.status === 'ok') CW.table('alerts-table', {
+      redraw: drawAlerts, search: 'alerts-q', count: 'alerts-n',
+      rows: a.data.filter((r) => CW.inScope(r.scope)),
+      fields: ['cert', 'title', 'summary', 'country_name'],
+      cells: [
+        { cls: 'date', fill: (td, r) => { td.textContent = r.date; } },
+        { fill: (td, r) => { td.textContent = r.cert; } },
+        { cls: 'clip', fill: (td, r) => CW.link(td, r.title, r.url) },
+      ],
+    });
+    const n = dash.data('news');
+    if (n.status === 'ok') CW.table('news-table', {
+      redraw: drawAlerts, search: 'news-q', count: 'news-n',
+      rows: n.data.filter((r) => CW.scope() === 'world' || r.europe === true || r.europe === 'true'),
+      fields: ['title', 'domain', 'mentions', 'publisher_country'],
+      cells: [
+        { cls: 'date', fill: (td, r) => { td.textContent = r.date; } },
+        { cls: 'clip', fill: (td, r) => CW.link(td, r.title, r.url) },
+        { fill: (td, r) => { td.textContent = r.mentions || ''; } },
+        { cls: 'hide-narrow', fill: (td, r) => { td.textContent = r.domain; } },
+      ],
+    });
+  };
+  const drawHistory = () => {
+    const box = document.getElementById('history-chart');
+    document.getElementById('lg-eu2').style.background = dash.colors[0];
+    if (!CW.state(box, 'eurepoc_years')) return;
+    const keepTip = box.querySelector('.cw-tip'); box.replaceChildren(); if (keepTip) box.appendChild(keepTip);
+    const rows = (dash.data('eurepoc_years').data || []).map((r) => ({ year: String(r.year), europe: +r.europe, world: +r.world })).filter((r) => r.year >= '2000');
+    if (!rows.length) { const p = document.createElement('p'); p.className = 'cw-note'; p.textContent = 'The history dataset has not been loaded yet.'; box.appendChild(p); return; }
+    const W = Math.max(300, box.clientWidth), H = 240, m = { t: 10, r: 8, b: 26, l: 40 };
+    const x = d3.scaleBand(rows.map((r) => r.year), [m.l, W - m.r]).padding(0.25);
+    const y = d3.scaleLinear([0, d3.max(rows, (r) => r.world) || 1], [H - m.b, m.t]).nice();
+    const svg = d3.select(box).insert('svg', ':first-child').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'Significant incidents per year');
+    svg.append('g').selectAll('line').data(y.ticks(4)).join('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('text').data(y.ticks(4)).join('text').attr('x', m.l - 6).attr('y', (d) => y(d) + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text(CW.fmt);
+    const step = Math.ceil(rows.length / Math.max(2, Math.floor(W / 48)));
+    svg.append('g').selectAll('text').data(rows.filter((r, i) => i % step === 0)).join('text').attr('x', (r) => x(r.year) + x.bandwidth() / 2).attr('y', H - 8).attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text((r) => r.year);
+    const t = CW.tip(box);
+    const g = svg.append('g').selectAll('g').data(rows).join('g');
+    g.append('rect').attr('x', (r) => x(r.year)).attr('width', x.bandwidth()).attr('y', (r) => y(r.world)).attr('height', (r) => y(0) - y(r.world)).attr('rx', 3).attr('fill', 'var(--cds-chart-muted)');
+    g.append('rect').attr('x', (r) => x(r.year)).attr('width', x.bandwidth()).attr('y', (r) => y(r.europe)).attr('height', (r) => y(0) - y(r.europe)).attr('rx', 3).attr('fill', dash.colors[0]);
+    g.on('mousemove', (ev, r) => t.show(ev, [[r.year, ''], ['Affecting Europe', CW.fmt(r.europe)], ['All incidents', CW.fmt(r.world)]])).on('mouseleave', () => t.hide());
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'var(--cds-chart-axis)');
+  };
+  const drawSources = () => {
+    const s = dash.data('sources'); if (s.status !== 'ok') return;
+    CW.table('sources-table', {
+      redraw: drawSources, sort: ['source', 1],
+      rows: s.data.map((r) => ({ ...r, records: r.records === null || r.records === '' ? null : Number(r.records) })),
+      fields: ['source'],
+      cells: [
+        { fill: (td, r) => CW.link(td, r.source, r.url) },
+        { fill: (td, r) => { td.textContent = r.signal || ''; } },
+        { cls: 'date', fill: (td, r) => { td.textContent = r.last_success ? String(r.last_success).replace('T', ' ').slice(0, 16) + ' UTC' : 'never'; } },
+        { cls: 'num', fill: (td, r) => { td.textContent = r.records === null ? '—' : CW.fmt(r.records); } },
+        { cls: 'clip hide-narrow', fill: (td, r) => { if (r.error) CW.pill(td, String(r.error).slice(0, 90), 'warn'); else CW.pill(td, 'OK', 'ok'); } },
+        { cls: 'hide-narrow', fill: (td, r) => { td.textContent = r.license || ''; } },
+      ],
+    });
+  };
+  const pages = { ransomware: drawRansomware, attacks: drawAttacks, vulns: drawVulns, alerts: drawAlerts, history: drawHistory, sources: drawSources };
+  window.CW.draw = () => { window.CW.drawOverview(); const f = pages[window.CW.current]; if (f) f(); };
+  dash.onData(() => window.CW.draw());
+  window.CW.show(window.CW.current);
+})();
+</script>

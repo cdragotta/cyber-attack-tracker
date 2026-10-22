@@ -38,3 +38,7 @@ Python 3.10+, standard library only. Workflows can be run by hand from the Actio
 ## Licensing
 
 Ransomware.live's free v2 API is for personal use only. EuRepoC data is CC BY-NC 4.0. CISA KEV is CC0. RansomLook content is CC BY 4.0. Check each source's terms before any commercial use.
+
+## Dashboard
+
+The live dashboard is a Claude artifact, **Europe Cyber Watch**. A daily scheduled task (06:33 UTC) copies `data/dash/*.json` into it. `dashboard/index.html` is a copy of its page code for safekeeping.
