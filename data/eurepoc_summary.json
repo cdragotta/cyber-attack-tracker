@@ -1,0 +1,18 @@
+{
+ "dataset": "eurepoc_receiver_dataset_1.3.csv",
+ "version": "1.3.2",
+ "license": "CC BY-NC 4.0",
+ "rows": 12180,
+ "columns_used": [
+  "name",
+  null,
+  null,
+  null,
+  null
+ ],
+ "by_year": {},
+ "top_europe_countries": [],
+ "types": [],
+ "recent_europe": [],
+ "generated": "2026-10-22T11:31:09Z"
+}
