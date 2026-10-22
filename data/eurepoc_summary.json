@@ -1,18 +1,635 @@
 {
- "dataset": "eurepoc_receiver_dataset_1.3.csv",
+ "dataset": "eurepoc_global_dataset_1_3.csv",
  "version": "1.3.2",
  "license": "CC BY-NC 4.0",
- "rows": 12180,
+ "rows": 3414,
  "columns_used": [
   "name",
-  null,
-  null,
-  null,
-  null
+  "start_date",
+  "receiver_country",
+  "incident_type",
+  "initiator_name"
+ ],
+ "all_files": [
+  "eurepoc_receiver_dataset_1.3.xlsx",
+  "eurepoc_receiver_dataset_1.3.csv",
+  "eurepoc_codebook_1_2.pdf",
+  "eurepoc_dataset_handbook_0_1.pdf",
+  "version_changelog.txt",
+  "eurepoc_global_dataset_1_3.csv",
+  "eurepoc_global_dataset_1_3.xlsx",
+  "eurepoc_dyadic_dataset_0_1.xlsx",
+  "eurepoc_dyadic_dataset_0_1.csv",
+  "eurepoc_attribution_dataset_1.3.xlsx",
+  "version.txt",
+  "eurepoc_attribution_dataset_1.3.csv"
+ ],
+ "all_columns": [
+  "incident_id",
+  "name",
+  "description",
+  "start_date",
+  "end_date",
+  "inclusion_criterion",
+  "inclusion_criterion_subcode",
+  "source_disclosure",
+  "incident_type",
+  "receiver_name",
+  "receiver_country",
+  "receiver_country_alpha_2_code",
+  "receiver_regions",
+  "receiver_category",
+  "receiver_subcategory",
+  "initiator_name",
+  "initiator_country",
+  "initiator_alpha_2",
+  "initiator_category",
+  "initiator_subcategory",
+  "number_attributions",
+  "attribution_id",
+  "attribution_date",
+  "attribution_type",
+  "attribution_basis",
+  "attributing_actor",
+  "attributing_company",
+  "attributing_country",
+  "settled_initiator",
+  "initiator_country",
+  "initiator_category",
+  "attribution_source_url",
+  "cyber_conflict_issue",
+  "offline_conflict_issue",
+  "offline_conflict_name",
+  "offline_conflict_intensity",
+  "offline_conflict_intensity_subcode",
+  "number_political_responses",
+  "political_response_date",
+  "political_response_type",
+  "political_response_subtype",
+  "political_response_responding_country",
+  "political_response_responding_actor",
+  "zero_days",
+  "zero_days_subcode",
+  "mitre_initial_access",
+  "mitre_impact",
+  "user_interaction",
+  "has_disruption",
+  "data_theft",
+  "disruption",
+  "hijacking",
+  "physical_effects_spatial",
+  "physical_effects_temporal",
+  "unweighted_intensity",
+  "target_multiplier",
+  "weighted_intensity",
+  "impact_indicator_label",
+  "impact_indicator_score",
+  "functional_impact",
+  "intelligence_impact",
+  "affected_entities",
+  "affected_entities_value",
+  "affected_third_countries",
+  "affected_third_countries_value",
+  "economic_impact",
+  "economic_impact_value",
+  "economic_impact_currency",
+  "state_responsibility_actor",
+  "il_breach_indicator",
+  "il_breach_indicator_subcode",
+  "evidence_for_sanctions_indicator",
+  "number_legal_responses",
+  "legal_response_date",
+  "legal_response_type",
+  "legal_response_subtype",
+  "legal_response_responding_country",
+  "legal_response_responding_actor",
+  "attribution_legal_reference",
+  "attribution_legal_reference_subcode",
+  "response_indicator",
+  "casualties",
+  "source_url",
+  "added_to_db",
+  "updated_at"
  ],
  "by_year": {},
- "top_europe_countries": [],
- "types": [],
- "recent_europe": [],
- "generated": "2026-10-22T11:31:09Z"
+ "top_europe_countries": [
+  [
+   "DE",
+   401
+  ],
+  [
+   "GB",
+   368
+  ],
+  [
+   "UA",
+   305
+  ],
+  [
+   "FR",
+   300
+  ],
+  [
+   "TR",
+   252
+  ],
+  [
+   "IT",
+   230
+  ],
+  [
+   "ES",
+   197
+  ],
+  [
+   "BE",
+   131
+  ],
+  [
+   "CH",
+   112
+  ],
+  [
+   "NL",
+   97
+  ],
+  [
+   "AM",
+   77
+  ],
+  [
+   "PL",
+   72
+  ],
+  [
+   "AT",
+   67
+  ],
+  [
+   "GE",
+   65
+  ],
+  [
+   "EE",
+   65
+  ]
+ ],
+ "types": [
+  [
+   "Hijacking with Misuse",
+   1824
+  ],
+  [
+   "Disruption",
+   1485
+  ],
+  [
+   "Data theft",
+   1270
+  ],
+  [
+   "Ransomware",
+   509
+  ],
+  [
+   "Data theft & Doxing",
+   420
+  ],
+  [
+   "Hijacking without Misuse",
+   370
+  ],
+  [
+   "Not available",
+   4
+  ]
+ ],
+ "recent_europe": [
+  {
+   "date": "",
+   "name": "Serbian Security Intelligence Agency (BIA) used Cellebrite tool and NoviSpy spyware to extract data from journalist Slavisa Milanov beginni…",
+   "countries": [
+    "RS"
+   ],
+   "type": "Data theft;Hijacking with Misuse",
+   "initiator": "Security Intelligence Agency (BIA)",
+   "category": "Media"
+  },
+  {
+   "date": "",
+   "name": "Unknown Threat Actors gained access to the Spanish National Commission on Markets and Competition (CNMC) and exfiltrated approximately 240…",
+   "countries": [
+    "ES"
+   ],
+   "type": "Data theft;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system"
+  },
+  {
+   "date": "",
+   "name": "8Base Ransomware Group Stole Sensitive Data From Croatia’s Port of Rijeka On 30 November 2024",
+   "countries": [
+    "HR"
+   ],
+   "type": "Data theft;Hijacking with Misuse",
+   "initiator": "Unknown",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown threat actors encrypted the electronic systems of three medical practices and their branches at the Hofer Medical Center in Germany…",
+   "countries": [
+    "DE"
+   ],
+   "type": "Disruption;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Near2tlg gained access into the extranet of the HR department of the Bank of France",
+   "countries": [
+    "FR"
+   ],
+   "type": "Data theft & Doxing;Hijacking with Misuse",
+   "initiator": "Near2tlg",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown threat actors carried out a DDDos-attack against Swiss website provider Backslash affecting cantons and towns in Switzerland on 24…",
+   "countries": [
+    "CH",
+    "CH",
+    "CH",
+    "CH"
+   ],
+   "type": "Disruption",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system;Critical infrastructure;State institution…"
+  },
+  {
+   "date": "",
+   "name": "Apparently pro-palestianian group Mr Hamza launched DDoS attacks on websites of several German security authorities on 22 November 2024",
+   "countries": [
+    "DE",
+    "DE",
+    "DE"
+   ],
+   "type": "Disruption",
+   "initiator": "Mr Hamza",
+   "category": "State institutions / political system;State institutions / political system;Sta…"
+  },
+  {
+   "date": "",
+   "name": "Unknown threat actors breached French retailer Auchan in France, exposing hundreds of thousands of customers personal data",
+   "countries": [
+    "FR"
+   ],
+   "type": "Data theft;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "German Pharmaceutical Wholesaler AEP Had Its Systems Encrypted By Unknown Hackers On 28 October 2024",
+   "countries": [
+    "DE"
+   ],
+   "type": "Disruption;Hijacking with Misuse;Disruption;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown Threat Actors Attacked Seven Secondary Schools in the District of Kitzingen, Germany, by Breaching Their IT Systems on 23 October 2…",
+   "countries": [
+    "DE",
+    "DE",
+    "DE",
+    "DE"
+   ],
+   "type": "Data theft;Disruption;Hijacking with Misuse;Ransomware",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system;Education;State institutions / political…"
+  },
+  {
+   "date": "",
+   "name": "Unknown Threat Actors Breached French Telecom Free’s Data Management Systems in October 2024",
+   "countries": [
+    "FR"
+   ],
+   "type": "Data theft;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown Hackers Defaced the Websites of Bold Medya and Turkishminute, Displaying the Names of Those Who Lost Their Lives in the Coup Attemp…",
+   "countries": [
+    "DE",
+    "TR"
+   ],
+   "type": "Hijacking with Misuse",
+   "initiator": "Unknown",
+   "category": "Media;Media"
+  },
+  {
+   "date": "",
+   "name": "Unknown Threat Actors Launched a Cyberattack Against German Precision Engineering Company Schumag AG in September 2024",
+   "countries": [
+    "DE"
+   ],
+   "type": "Not available",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown Threat Actors Compromised Servers of Catholic University of Valencia, Spain, in Ransomware Attack on 30 September 2024",
+   "countries": [
+    "ES",
+    "ES"
+   ],
+   "type": "Disruption;Hijacking with Misuse;Ransomware",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure;Education"
+  },
+  {
+   "date": "",
+   "name": "Unknown Threat Actors launched a ransomware attack against Agència de Residus de Catalunya over the weekend of 28 to 29 September 2024",
+   "countries": [
+    "ES"
+   ],
+   "type": "Hijacking with Misuse;Ransomware;Hijacking with Misuse;Ransomware",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown Hackers Breached Spanish Insurer Mutua Madrileña's Home Insurance Customer Database on 23 September 2024",
+   "countries": [
+    "ES"
+   ],
+   "type": "Data theft;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure;Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown Threat Actor Compromised Public Wi-Fi at Major UK Railway Stations, Displaying Terror Messages on 25 September 2024",
+   "countries": [
+    "GB"
+   ],
+   "type": "Disruption;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "The Russian state-sponsored hacking group NoName057(16) disrupted several official websites of Austrian political parties and institutions…",
+   "countries": [
+    "AT",
+    "AT",
+    "AT",
+    "AT"
+   ],
+   "type": "Disruption",
+   "initiator": "NoName057(16)",
+   "category": "State institutions / political system;State institutions / political system;Sta…"
+  },
+  {
+   "date": "",
+   "name": "Unknown Perpetrators Rendered the Website of the Austrian City of Graz Inaccessible with DDoS Attack since 20 September 2024",
+   "countries": [
+    "AT"
+   ],
+   "type": "Disruption",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system"
+  },
+  {
+   "date": "",
+   "name": "Allegedly, three people disrupted the Ekomobil traffic application of the Izmit Metropolitan Municipality in the Turkish province of Kocael…",
+   "countries": [
+    "TR"
+   ],
+   "type": "Disruption",
+   "initiator": "A.A.;M.K.S.;A.D.",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown Hackers Engaged in DDoS Attack on the Website of the German AfD Party in Brandenburg on 27 August 2024",
+   "countries": [
+    "DE"
+   ],
+   "type": "Disruption",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system"
+  },
+  {
+   "date": "",
+   "name": "Unknown hackers attacked the supermarket chain Alcampo on 25 August 2024",
+   "countries": [
+    "ES"
+   ],
+   "type": "Disruption;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown attackers hit the Canvey Infant School (United Kingdom) on August 2024",
+   "countries": [
+    "GB",
+    "GB"
+   ],
+   "type": "Hijacking without Misuse",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system;Education"
+  },
+  {
+   "date": "",
+   "name": "SilkFin stole data from Italian National Research Council (CNR) on 25 August 2024 and leaked SQL file on leak site",
+   "countries": [
+    "IT",
+    "IT",
+    "IT",
+    "IT"
+   ],
+   "type": "Data theft & Doxing;Hijacking with Misuse",
+   "initiator": "SilkFin",
+   "category": "State institutions / political system;Critical infrastructure;State institution…"
+  },
+  {
+   "date": "",
+   "name": "The Malaysian hacktivist group RipperSec disrupted the website of the French comparison website PriceBank on 25 August 2024",
+   "countries": [
+    "FR"
+   ],
+   "type": "Disruption",
+   "initiator": "RipperSec",
+   "category": "Corporate Targets (corporate targets only coded if the respective company is no…"
+  },
+  {
+   "date": "",
+   "name": "State-sponsored hacktivist group People's Cyber Army of Russia in collaboration with the pro-Russian hacktivist group disrupted the website…",
+   "countries": [
+    "FR",
+    "FR"
+   ],
+   "type": "Disruption",
+   "initiator": "Unknown",
+   "category": "State institutions / political system;State institutions / political system"
+  },
+  {
+   "date": "",
+   "name": "The state-sponsored hacktivist group People's Cyber Army of Russia disrupted the website of the Federation of Energy and Digital Infrastruc…",
+   "countries": [
+    "FR"
+   ],
+   "type": "Disruption",
+   "initiator": "People’s Cyber Army of Russia",
+   "category": "Social groups"
+  },
+  {
+   "date": "",
+   "name": "Unnamed hacktivists disrupted multiple french websites with DDOS Attacks following the arrest of Telegram Founder Pavel Durov on 24 August…",
+   "countries": [
+    "FR",
+    "FR",
+    "FR",
+    "FR"
+   ],
+   "type": "Disruption",
+   "initiator": "Unknown",
+   "category": "Social groups;Media;State institutions / political system;State institutions /…"
+  },
+  {
+   "date": "",
+   "name": "Unknown actors hit Swisscom with DDoS attack on 23 August 2024",
+   "countries": [
+    "CH",
+    "CH"
+   ],
+   "type": "Disruption",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure;Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Akira Ransomware Group Steals and Encrypts Data from Switzerland's Hoerbiger Holding on 29 July 2024",
+   "countries": [
+    "CH"
+   ],
+   "type": "Data theft;Disruption;Hijacking with Misuse;Ransomware",
+   "initiator": "Unknown",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown hackers disrupted systems of Municipality of Fabriano, Italy on 29 July 2024",
+   "countries": [
+    "IT"
+   ],
+   "type": "Disruption;Hijacking with Misuse;Ransomware",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system"
+  },
+  {
+   "date": "",
+   "name": "Akira Ransomware Gang Shuts Down IT Infrastructure at Croatia's Split St Jerome Airport on 22 July 2024",
+   "countries": [
+    "HR"
+   ],
+   "type": "Disruption;Hijacking with Misuse;Ransomware",
+   "initiator": "Akira Ransomware Group/Storm-1567",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Unknown actors stole data from the city council of Gijon in the Spanish region of Asturias using a hidden computer",
+   "countries": [
+    "ES"
+   ],
+   "type": "Data theft;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system"
+  },
+  {
+   "date": "",
+   "name": "Lockbit attacked Croatian University Hospital Zagreb (KBC Zagreb) with ransomware on 27 June 2024",
+   "countries": [
+    "HR"
+   ],
+   "type": "Data theft;Disruption;Hijacking with Misuse;Ransomware",
+   "initiator": "Lockbit 3.0",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Russian State-Sponsored Hacker Group APT29 (aka Midnight Blizzard, Cozy Bear, Nobelium) targeted German Software company TeamViewer on 26 J…",
+   "countries": [
+    "DE"
+   ],
+   "type": "Hijacking without Misuse",
+   "initiator": "Unknown",
+   "category": "Corporate Targets (corporate targets only coded if the respective company is no…"
+  },
+  {
+   "date": "",
+   "name": "Unknown threat actors paralyzed the servers of the French town Fleury-les-Aubrais on 24 June 2024",
+   "countries": [
+    "FR"
+   ],
+   "type": "Disruption;Hijacking with Misuse;Ransomware",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system"
+  },
+  {
+   "date": "",
+   "name": "Unknown actors targeted crypto exchange BtcTurk on 22 June 2024 and stole almost $55 million",
+   "countries": [
+    "TR"
+   ],
+   "type": "Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "Critical infrastructure"
+  },
+  {
+   "date": "",
+   "name": "Russian Attackers target the Polish news agency PAP On 31 May 2024",
+   "countries": [
+    "PL",
+    "PL"
+   ],
+   "type": "Hijacking with Misuse",
+   "initiator": "Unknown",
+   "category": "State institutions / political system;Media"
+  },
+  {
+   "date": "",
+   "name": "Unknown Hacker Hit Swiss Secondary School Kantonsschule Frauenfeld With Ransomware On 31 May 2024",
+   "countries": [
+    "CH",
+    "CH"
+   ],
+   "type": "Disruption;Hijacking with Misuse;Ransomware",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system;Education"
+  },
+  {
+   "date": "",
+   "name": "Unknown Attackers Gained Access To The IT Systems Of Billericay School In Essex, UK, On 31 May 2024",
+   "countries": [
+    "GB",
+    "GB"
+   ],
+   "type": "Disruption;Hijacking with Misuse",
+   "initiator": "Not attributed",
+   "category": "State institutions / political system;Education"
+  }
+ ],
+ "generated": "2026-10-22T11:37:25Z"
 }
