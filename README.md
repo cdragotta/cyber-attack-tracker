@@ -19,6 +19,10 @@ Four kinds of signal, kept separate. They are never added into one "attack count
 
 `data/dashboard.json` bundles the last 30–90 days for the dashboard. `data/sources.json` records each source's last success, record count, error and license.
 
+## Translation
+
+Titles, summaries and descriptions in other languages are machine-translated into English on the GitHub runner with open-source [Argos Translate](https://www.argosopentech.com) models (no API key; no text leaves GitHub). Each translated field keeps the original in `<field>_original` and its language in `<field>_lang`. Translations are cached in `data/translations.json`.
+
 ## Rules the data follows
 
 - **Country = victim country**, never attacker IP.

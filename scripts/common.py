@@ -202,6 +202,7 @@ SOURCE_META = {
     "first-epss": {"url": "https://www.first.org/epss", "license": "Free, no registration", "signal": "Exploit probability"},
     "cert-rss": {"url": "https://github.com/pulsedive/certrss", "license": "Public RSS (official CERTs)", "signal": "Official alerts"},
     "gdelt": {"url": "https://www.gdeltproject.org", "license": "Free, open", "signal": "News discovery"},
+    "translation": {"url": "https://www.argosopentech.com", "license": "Argos Translate models, open source (run on GitHub)", "signal": "English translations"},
     "eurepoc": {"url": "https://eurepoc.eu", "license": "CC BY-NC 4.0 (non-commercial)", "signal": "Historical coded incidents"},
 }
 

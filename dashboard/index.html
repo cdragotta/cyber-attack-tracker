@@ -48,6 +48,7 @@
 .cw .pill.bad { color: var(--color-bad); border-color: currentColor; }
 .cw .pill.ok { color: var(--color-ok); border-color: currentColor; }
 .cw .pill.warn { color: var(--color-warn); border-color: currentColor; }
+.cw .pill.lang { font-size: .65rem; padding: 0 5px; cursor: help; vertical-align: 1px; }
 .cw .hide-narrow { }
 @media (max-width: 640px) { .cw .hide-narrow { display: none; } }
 .cw-fail { display: flex; align-items: center; justify-content: center; gap: .5rem; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); min-height: inherit; }
@@ -164,7 +165,7 @@
   <section class="cw-page" id="attacks" data-page="attacks" hidden>
     <article class="cw-card" id="attacks-card">
       <h2>Reported cyberattacks</h2>
-      <p class="cw-note">Incidents covered by the press or disclosed by the victim, last 90 days. Summaries are in the source's language.</p>
+      <p class="cw-note">Incidents covered by the press or disclosed by the victim, last 90 days. Text in other languages is machine-translated into English; hover a language tag to see the original.</p>
       <div class="cw-tools"><input type="search" id="attacks-q" placeholder="Search victim, country, summary" aria-label="Search attacks"><span class="cw-count" id="attacks-n"></span></div>
       <div class="cw-tablebox">
         <table id="attacks-table" data-source="incidents" data-row-key="id">
@@ -206,7 +207,7 @@
     <div class="cw-grid">
       <article class="cw-card wide" id="alerts-card">
         <h2>Official alerts</h2>
-        <p class="cw-note">Advisories and news from CERT-EU and national cyber agencies, last 30 days. Titles are in each agency's language.</p>
+        <p class="cw-note">Advisories and news from CERT-EU and national cyber agencies, last 30 days. Machine-translated into English; hover a language tag to see the original.</p>
         <div class="cw-tools"><input type="search" id="alerts-q" placeholder="Search alerts" aria-label="Search alerts"><span class="cw-count" id="alerts-n"></span></div>
         <div class="cw-tablebox">
           <table id="alerts-table" data-source="alerts" data-row-key="id">
@@ -457,8 +458,15 @@ window.CW = (() => {
     if (!u) { td.textContent = text; return; }
     const a = document.createElement('a'); a.href = u; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = text; td.appendChild(a);
   };
+  const orig = (td, r, field) => {
+    const lang = r[field + '_lang'], o = r[field + '_original'];
+    if (!lang || !o || o === r[field]) return;
+    const s = document.createElement('span'); s.className = 'pill lang'; s.textContent = String(lang).toUpperCase();
+    s.title = 'Translated from ' + String(lang).toUpperCase() + '. Original: ' + o; s.tabIndex = 0;
+    td.append(' ', s);
+  };
   const pill = (td, text, kind) => { const s = document.createElement('span'); s.className = 'pill' + (kind ? ' ' + kind : ''); s.textContent = text; td.appendChild(s); };
-  return { EUROPE, scope, inScope, fmt, fdate, safeUrl, scopeName, color, state, tip, bars, table, link, pill };
+  return { EUROPE, scope, inScope, fmt, fdate, safeUrl, scopeName, color, state, tip, bars, table, link, pill, orig };
 })();
 </script>
 
@@ -631,12 +639,12 @@ window.CW = (() => {
     CW.table('attacks-table', {
       redraw: drawAttacks, search: 'attacks-q', count: 'attacks-n',
       rows: c.data.filter((r) => CW.inScope(r.scope)),
-      fields: ['title', 'victim', 'country_name', 'summary'],
+      fields: ['title', 'victim', 'country_name', 'summary', 'title_original', 'summary_original'],
       cells: [
         { cls: 'date', fill: (td, r) => { td.textContent = r.date; } },
-        { cls: 'clip', fill: (td, r) => CW.link(td, r.title, r.url) },
+        { cls: 'clip', fill: (td, r) => { CW.link(td, r.title, r.url); CW.orig(td, r, 'title'); } },
         { fill: (td, r) => { td.textContent = r.country_name || 'Unknown'; } },
-        { cls: 'clip hide-narrow', fill: (td, r) => { td.textContent = r.summary; } },
+        { cls: 'clip hide-narrow', fill: (td, r) => { td.textContent = r.summary; CW.orig(td, r, 'summary'); } },
       ],
     });
   };
@@ -662,21 +670,21 @@ window.CW = (() => {
     if (a.status === 'ok') CW.table('alerts-table', {
       redraw: drawAlerts, search: 'alerts-q', count: 'alerts-n',
       rows: a.data.filter((r) => CW.inScope(r.scope)),
-      fields: ['cert', 'title', 'summary', 'country_name'],
+      fields: ['cert', 'title', 'summary', 'country_name', 'title_original'],
       cells: [
         { cls: 'date', fill: (td, r) => { td.textContent = r.date; } },
         { fill: (td, r) => { td.textContent = r.cert; } },
-        { cls: 'clip', fill: (td, r) => CW.link(td, r.title, r.url) },
+        { cls: 'clip', fill: (td, r) => { CW.link(td, r.title, r.url); CW.orig(td, r, 'title'); } },
       ],
     });
     const n = dash.data('news');
     if (n.status === 'ok') CW.table('news-table', {
       redraw: drawAlerts, search: 'news-q', count: 'news-n',
       rows: n.data.filter((r) => CW.scope() === 'world' || r.europe === true || r.europe === 'true'),
-      fields: ['title', 'domain', 'mentions', 'publisher_country'],
+      fields: ['title', 'domain', 'mentions', 'publisher_country', 'title_original'],
       cells: [
         { cls: 'date', fill: (td, r) => { td.textContent = r.date; } },
-        { cls: 'clip', fill: (td, r) => CW.link(td, r.title, r.url) },
+        { cls: 'clip', fill: (td, r) => { CW.link(td, r.title, r.url); CW.orig(td, r, 'title'); } },
         { fill: (td, r) => { td.textContent = r.mentions || ''; } },
         { cls: 'hide-narrow', fill: (td, r) => { td.textContent = r.domain; } },
       ],

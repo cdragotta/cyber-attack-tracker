@@ -548,13 +548,18 @@ def cmd_build():
           f"{len(bundle['vulns'])} vulns, {len(bundle['alerts'])} alerts, {len(bundle['news'])} news")
 
 
-COMMANDS = {"ransomware": cmd_ransomware, "alerts": cmd_alerts, "vulns": cmd_vulns,
+def cmd_translate():
+    from translate import cmd_translate as run
+    run()
+
+
+COMMANDS = {"translate": cmd_translate, "ransomware": cmd_ransomware, "alerts": cmd_alerts, "vulns": cmd_vulns,
             "news": cmd_news, "eurepoc": cmd_eurepoc, "build": cmd_build}
 
 if __name__ == "__main__":
     args = sys.argv[1:] or ["all"]
     if args == ["all"]:
-        args = ["ransomware", "alerts", "vulns", "news", "build"]
+        args = ["ransomware", "alerts", "vulns", "news", "translate", "build"]
     for a in args:
         print(f"== {a}")
         COMMANDS[a]()

@@ -20,8 +20,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Fetch and build
-        run: python scripts/tracker.py ransomware alerts news build
+      - name: Restore translation models
+        uses: actions/cache@v4
+        with:
+          path: .argos-cache
+          key: argos-${{ github.run_id }}
+          restore-keys: argos-
+      - name: Install translation engine
+        run: pip install --quiet ctranslate2 sentencepiece langdetect
+      - name: Fetch, translate and build
+        run: python scripts/tracker.py ransomware alerts news translate build
       - name: Commit data
         run: |
           git config user.name "tracker-bot"
