@@ -48,7 +48,10 @@ _models = {}
 
 
 def _key(lang, text):
-    return hashlib.sha1(f"{lang}|{text}".encode()).hexdigest()[:20]
+    return hashlib.sha1(f"v2|{lang}|{text}".encode()).hexdigest()[:20]
+
+
+_why = {}  # lang -> reason a model could not be loaded
 
 
 def _get(url, timeout=120):
@@ -89,6 +92,7 @@ def model(lang):
 
     pkg = available().get(lang)
     if not pkg:
+        _why[lang] = "no model in index"
         _models[lang] = None
         return None
     folder = os.path.join(CACHE_DIR, f"{lang}_en-{pkg.get('package_version', '0')}")
@@ -101,6 +105,7 @@ def model(lang):
                     blob = _get(link, 300)
                     break
                 except Exception as e:  # try the next mirror
+                    _why[lang] = f"download failed: {str(e)[:80]}"
                     print(f"model {lang} from {link} failed: {e}")
         if blob is None:
             _models[lang] = None
@@ -108,6 +113,8 @@ def model(lang):
         zipfile.ZipFile(io.BytesIO(blob)).extractall(folder)
     mdir, spath = _find_model_dir(folder), _find_sp(folder)
     if not mdir or not spath:
+        files = [os.path.relpath(os.path.join(d, f), folder) for d, _, fs in os.walk(folder) for f in fs][:12]
+        _why[lang] = f"unexpected package layout: {files}"
         _models[lang] = None
         return None
     prefix = None
@@ -117,8 +124,13 @@ def model(lang):
                 prefix = json.load(open(os.path.join(d, "metadata.json"))).get("target_prefix") or None
             except Exception:
                 pass
-    tr = ctranslate2.Translator(mdir, device="cpu", compute_type="int8", inter_threads=2, intra_threads=2)
-    sp = spm.SentencePieceProcessor(model_file=spath)
+    try:
+        tr = ctranslate2.Translator(mdir, device="cpu", compute_type="int8", inter_threads=2, intra_threads=2)
+        sp = spm.SentencePieceProcessor(model_file=spath)
+    except Exception as e:
+        _why[lang] = f"load failed: {str(e)[:120]}"
+        _models[lang] = None
+        return None
     _models[lang] = (tr, sp, prefix)
     return _models[lang]
 
@@ -153,7 +165,8 @@ def translate_texts(lang, texts):
         hyp = r.hypotheses[0]
         if prefix and hyp and hyp[0] == prefix:
             hyp = hyp[1:]
-        out[owner].append(sp.decode(hyp))
+        # target pieces are SentencePiece tokens: "▁" marks a word start
+        out[owner].append("".join(hyp).replace("\u2581", " ").strip())
     return [" ".join(o).strip() or texts[i] for i, o in enumerate(out)]
 
 
@@ -231,7 +244,7 @@ def cmd_translate():
                 errors.append(f"{lang}: {str(e)[:120]}")
             if not out:
                 if not any(e.startswith(lang + ":") for e in errors):
-                    errors.append(f"{lang}: model unavailable")
+                    errors.append(f"{lang}: {_why.get(lang, 'model unavailable')}")
                 for r, f, orig in items:
                     r[f + "_original"] = orig
                 continue
