@@ -203,6 +203,8 @@ SOURCE_META = {
     "cert-rss": {"url": "https://github.com/pulsedive/certrss", "license": "Public RSS (official CERTs)", "signal": "Official alerts"},
     "gdelt": {"url": "https://www.gdeltproject.org", "license": "Free, open", "signal": "News discovery"},
     "translation": {"url": "https://www.argosopentech.com", "license": "Argos Translate models, open source (run on GitHub)", "signal": "English translations"},
+    "dshield": {"url": "https://isc.sans.edu", "license": "SANS ISC / DShield API, free; attribution requested", "signal": "Attack-map sensor observations"},
+    "tpot": {"url": "https://github.com/telekom-security/tpotce", "license": "Your own T-Pot honeypot", "signal": "Attack-map honeypot events"},
     "eurepoc": {"url": "https://eurepoc.eu", "license": "CC BY-NC 4.0 (non-commercial)", "signal": "Historical coded incidents"},
 }
 

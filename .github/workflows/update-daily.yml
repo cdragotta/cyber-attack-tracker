@@ -1,4 +1,4 @@
-name: Update vulnerabilities (daily)
+name: Update vulnerabilities and attack map (daily)
 on:
   schedule:
     - cron: "43 5 * * *"   # daily 05:43 UTC
@@ -21,13 +21,17 @@ jobs:
         with:
           python-version: "3.12"
       - name: Fetch and build
-        run: python scripts/tracker.py vulns build
+        run: python scripts/tracker.py vulns attackmap build
+        env:
+          TPOT_ES_URL: ${{ secrets.TPOT_ES_URL }}
+          TPOT_ES_USER: ${{ secrets.TPOT_ES_USER }}
+          TPOT_ES_PASS: ${{ secrets.TPOT_ES_PASS }}
       - name: Commit data
         run: |
           git config user.name "tracker-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data
           git diff --cached --quiet && exit 0
-          git commit -m "data: vulnerabilities $(date -u +%Y-%m-%dT%H:%MZ)"
+          git commit -m "data: vulnerabilities, attack map $(date -u +%Y-%m-%dT%H:%MZ)"
           git pull --rebase -X theirs origin main || { git rebase --abort; git pull --no-rebase -X ours origin main; }
           git push

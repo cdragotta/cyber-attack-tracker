@@ -1,7 +1,7 @@
 """Cyber attack tracker data pipeline.
 
 Usage:  python scripts/tracker.py <command> [<command> ...]
-Commands: ransomware, alerts, vulns, news, eurepoc, build, all
+Commands: ransomware, alerts, vulns, news, eurepoc, attackmap, translate, build, all
 
 Each command fetches free public sources, normalizes them and merges them into
 data/*.json. A failing source never stops the others; its error is written to
@@ -548,13 +548,18 @@ def cmd_build():
           f"{len(bundle['vulns'])} vulns, {len(bundle['alerts'])} alerts, {len(bundle['news'])} news")
 
 
+def cmd_attackmap():
+    from attackmap import cmd_attackmap as run
+    run()
+
+
 def cmd_translate():
     from translate import cmd_translate as run
     run()
 
 
 COMMANDS = {"translate": cmd_translate, "ransomware": cmd_ransomware, "alerts": cmd_alerts, "vulns": cmd_vulns,
-            "news": cmd_news, "eurepoc": cmd_eurepoc, "build": cmd_build}
+            "news": cmd_news, "eurepoc": cmd_eurepoc, "attackmap": cmd_attackmap, "build": cmd_build}
 
 if __name__ == "__main__":
     args = sys.argv[1:] or ["all"]
