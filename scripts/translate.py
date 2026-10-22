@@ -78,7 +78,7 @@ def _find_model_dir(root):
 def _find_sp(root):
     for d, _, files in os.walk(root):
         for f in files:
-            if f.endswith(".model") and "sentencepiece" in f:
+            if f.endswith(".model") and ("sentencepiece" in f or f in ("bpe.model", "spm.model", "source.spm")):
                 return os.path.join(d, f)
     return None
 
