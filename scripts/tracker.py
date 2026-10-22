@@ -453,17 +453,19 @@ def cmd_eurepoc():
             return None
 
         c_name, c_date = col("name", "incident_name"), col("start_date", "start_date_inc")
-        c_recv = col("receiver_country", "receiver_country_alpha_2_code")
+        c_recv = col("receiver_country_alpha_2_code", "receiver_country")
         c_type, c_init = col("incident_type"), col("initiator_name")
         c_cat = col("receiver_category")
         by_year = defaultdict(lambda: {"europe": 0, "world": 0})
         top_eu, types = Counter(), Counter()
-        recent = []
+        recent, samples = [], []
         n = 0
         for row in reader:
             n += 1
-            year = (to_date(row.get(c_date, "")) or str(row.get(c_date, ""))[:4])[:4]
-            ccs = [iso2(x.strip()) for x in re.split(r"[;,|]", row.get(c_recv, "") or "") if x.strip()]
+            raw_date = str(row.get(c_date, "") or "")
+            m4 = re.search(r"(19|20)\d{2}", raw_date)
+            year = (to_date(raw_date) or (m4.group(0) if m4 else ""))[:4]
+            ccs = [iso2(x.strip(" '\"[]")) for x in re.split(r"[;,|\n]", row.get(c_recv, "") or "") if x.strip(" '\"[]")]
             eu = any(is_europe(c) for c in ccs)
             if year.isdigit():
                 by_year[year]["world"] += 1
@@ -472,18 +474,21 @@ def cmd_eurepoc():
             for c in ccs:
                 if is_europe(c):
                     top_eu[c] += 1
-            for t in re.split(r"[;,|]", row.get(c_type, "") or ""):
-                if t.strip():
-                    types[t.strip()] += 1
+            for t in re.split(r"[;,|\n]", row.get(c_type, "") or ""):
+                t = t.strip(" '\"[]")
+                if t:
+                    types[t] += 1
+            if n <= 2:
+                samples.append({k: str(row.get(k, ""))[:80] for k in (c_name, c_date, c_recv, c_type, c_init) if k})
             if eu and year >= "2024":
-                recent.append({"date": to_date(row.get(c_date, "")), "name": clean(row.get(c_name), 140),
+                recent.append({"date": to_date(raw_date) or year, "name": clean(row.get(c_name), 140),
                                "countries": [c for c in ccs if c][:4], "type": clean(row.get(c_type), 80),
                                "initiator": clean(row.get(c_init), 80), "category": clean(row.get(c_cat), 80)})
         recent.sort(key=lambda r: r["date"], reverse=True)
         save("eurepoc_summary.json", {
             "dataset": pick.get("key"), "version": rec.get("metadata", {}).get("version", ""),
             "license": "CC BY-NC 4.0", "rows": n, "columns_used": [c_name, c_date, c_recv, c_type, c_init],
-            "all_files": [f.get("key") for f in files], "all_columns": cols,
+            "sample_rows": samples,
             "by_year": dict(sorted(by_year.items())),
             "top_europe_countries": top_eu.most_common(15), "types": types.most_common(10),
             "recent_europe": recent[:40], "generated": now_iso(),

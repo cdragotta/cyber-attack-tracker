@@ -80,7 +80,7 @@ def now_iso():
 _DATE_FORMATS = [
     "%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ",
     "%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%dT%H:%M:%S.%f%z", "%Y-%m-%d", "%a, %d %b %Y %H:%M:%S %z",
-    "%a, %d %b %Y %H:%M:%S %Z", "%b %d, %Y, %I:%M:%S %p", "%Y%m%dT%H%M%SZ", "%d/%m/%Y",
+    "%a, %d %b %Y %H:%M:%S %Z", "%b %d, %Y, %I:%M:%S %p", "%Y%m%dT%H%M%SZ", "%d/%m/%Y", "%d.%m.%Y", "%m/%d/%Y",
 ]
 
 

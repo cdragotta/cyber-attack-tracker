@@ -1,7 +1,7 @@
 name: Refresh EuRepoC history (quarterly)
 on:
   schedule:
-    - cron: "11 6 1 */3 *"   # quarterly; picked up by the next 2-hourly build
+    - cron: "11 6 1 */3 *"   # quarterly - the next 2-hourly build picks it up
   workflow_dispatch:
   push:
     branches: [main]
