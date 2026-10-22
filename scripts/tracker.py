@@ -200,7 +200,6 @@ CERT_FEEDS = [
     ("NCSC-FI", "FI", "https://www.kyberturvallisuuskeskus.fi/feed/rss/en"),
     ("CSIRT Italia", "IT", "https://www.acn.gov.it/portale/feedrss/-/journal/rss/20119/723192"),
     ("CERT.LV", "LV", "https://cert.lv/en/feed/rss/all"),
-    ("CISA", "US", "https://www.cisa.gov/cybersecurity-advisories/all.xml|https://www.cisa.gov/uscert/ncas/all.xml|https://www.cisa.gov/news.xml"),
 ]
 
 
@@ -360,7 +359,7 @@ def cmd_vulns():
 # ===================================================================== news
 GDELT_QUERIES = [
     '(cyberattack OR "cyber attack" OR ransomware OR "data breach" OR DDoS OR hackers) sourcelang:english',
-    '(cyberattaque OR Cyberangriff OR ciberataque OR "attacco informatico" OR cyberaanval OR cyberatak OR rançongiciel OR Hackerangriff)',
+    '(cyberattaque OR Cyberangriff OR ciberataque OR cyberaanval OR cyberatak)',
 ]
 _NAME_PATTERNS = sorted(NAME_TO_ISO.items(), key=lambda kv: -len(kv[0]))
 
@@ -428,11 +427,11 @@ def cmd_eurepoc():
         rec = http_get("https://zenodo.org/api/records/14965395")
         files = rec.get("files", [])
         pick = None
-        for f in files:
-            k = f.get("key", "").lower()
-            if k.endswith(".csv") and "main" in k:
-                pick = f
-                break
+        for want in ("main", "global"):
+            for f in files:
+                k = f.get("key", "").lower()
+                if k.endswith(".csv") and want in k and "receiver" not in k and "attribution" not in k and "dyadic" not in k:
+                    pick = pick or f
         if not pick:
             pick = next((f for f in files if f.get("key", "").lower().endswith(".csv")), None)
         if not pick:
@@ -484,6 +483,7 @@ def cmd_eurepoc():
         save("eurepoc_summary.json", {
             "dataset": pick.get("key"), "version": rec.get("metadata", {}).get("version", ""),
             "license": "CC BY-NC 4.0", "rows": n, "columns_used": [c_name, c_date, c_recv, c_type, c_init],
+            "all_files": [f.get("key") for f in files], "all_columns": cols,
             "by_year": dict(sorted(by_year.items())),
             "top_europe_countries": top_eu.most_common(15), "types": types.most_common(10),
             "recent_europe": recent[:40], "generated": now_iso(),
