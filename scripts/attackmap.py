@@ -30,7 +30,7 @@ from common import (COUNTRY_NAMES, days_ago, europe_scope, http_get, iso2, load,
 
 ISC = "https://isc.sans.edu/api"
 # DShield asks API users to identify themselves; common.UA already names the repo.
-LOOKUPS = 40          # per-IP country lookups per run (polite: ~1 request/second)
+LOOKUPS = 100         # per-IP country lookups (cached 30 days, so later runs make few; ~1 request/second)
 TOP_IPS = 100
 TOP_PORTS = 20
 
@@ -49,6 +49,65 @@ SERVICES = {
 }
 
 TARGET_DSHIELD = "DShield sensors (worldwide)"
+
+# ISO-3166 short names, so every source country gets a readable name (common.COUNTRY_NAMES wins where it has one).
+ALL_NAMES = {
+    "AD": "Andorra", "AE": "United Arab Emirates", "AF": "Afghanistan", "AG": "Antigua and Barbuda", "AI": "Anguilla",
+    "AL": "Albania", "AM": "Armenia", "AO": "Angola", "AQ": "Antarctica", "AR": "Argentina",
+    "AS": "American Samoa", "AT": "Austria", "AU": "Australia", "AW": "Aruba", "AX": "Åland Islands",
+    "AZ": "Azerbaijan", "BA": "Bosnia and Herzegovina", "BB": "Barbados", "BD": "Bangladesh", "BE": "Belgium",
+    "BF": "Burkina Faso", "BG": "Bulgaria", "BH": "Bahrain", "BI": "Burundi", "BJ": "Benin",
+    "BL": "Saint Barthélemy", "BM": "Bermuda", "BN": "Brunei", "BO": "Bolivia", "BQ": "Bonaire, Sint Eustatius and Saba",
+    "BR": "Brazil", "BS": "Bahamas", "BT": "Bhutan", "BV": "Bouvet Island", "BW": "Botswana",
+    "BY": "Belarus", "BZ": "Belize", "CA": "Canada", "CC": "Cocos (Keeling) Islands", "CD": "DR Congo",
+    "CF": "Central African Republic", "CG": "Congo", "CH": "Switzerland", "CI": "Côte d'Ivoire", "CK": "Cook Islands",
+    "CL": "Chile", "CM": "Cameroon", "CN": "China", "CO": "Colombia", "CR": "Costa Rica",
+    "CU": "Cuba", "CV": "Cape Verde", "CW": "Curaçao", "CX": "Christmas Island", "CY": "Cyprus",
+    "CZ": "Czechia", "DE": "Germany", "DJ": "Djibouti", "DK": "Denmark", "DM": "Dominica",
+    "DO": "Dominican Republic", "DZ": "Algeria", "EC": "Ecuador", "EE": "Estonia", "EG": "Egypt",
+    "EH": "Western Sahara", "ER": "Eritrea", "ES": "Spain", "ET": "Ethiopia", "FI": "Finland",
+    "FJ": "Fiji", "FK": "Falkland Islands (Malvinas)", "FM": "Micronesia", "FO": "Faroe Islands", "FR": "France",
+    "GA": "Gabon", "GB": "United Kingdom", "GD": "Grenada", "GE": "Georgia", "GF": "French Guiana",
+    "GG": "Guernsey", "GH": "Ghana", "GI": "Gibraltar", "GL": "Greenland", "GM": "Gambia",
+    "GN": "Guinea", "GP": "Guadeloupe", "GQ": "Equatorial Guinea", "GR": "Greece", "GS": "South Georgia and the South Sandwich Islands",
+    "GT": "Guatemala", "GU": "Guam", "GW": "Guinea-Bissau", "GY": "Guyana", "HK": "Hong Kong",
+    "HM": "Heard Island and McDonald Islands", "HN": "Honduras", "HR": "Croatia", "HT": "Haiti", "HU": "Hungary",
+    "ID": "Indonesia", "IE": "Ireland", "IL": "Israel", "IM": "Isle of Man", "IN": "India",
+    "IO": "British Indian Ocean Territory", "IQ": "Iraq", "IR": "Iran", "IS": "Iceland", "IT": "Italy",
+    "JE": "Jersey", "JM": "Jamaica", "JO": "Jordan", "JP": "Japan", "KE": "Kenya",
+    "KG": "Kyrgyzstan", "KH": "Cambodia", "KI": "Kiribati", "KM": "Comoros", "KN": "Saint Kitts and Nevis",
+    "KP": "North Korea", "KR": "South Korea", "KW": "Kuwait", "KY": "Cayman Islands", "KZ": "Kazakhstan",
+    "LA": "Laos", "LB": "Lebanon", "LC": "Saint Lucia", "LI": "Liechtenstein", "LK": "Sri Lanka",
+    "LR": "Liberia", "LS": "Lesotho", "LT": "Lithuania", "LU": "Luxembourg", "LV": "Latvia",
+    "LY": "Libya", "MA": "Morocco", "MC": "Monaco", "MD": "Moldova", "ME": "Montenegro",
+    "MF": "Saint Martin (French part)", "MG": "Madagascar", "MH": "Marshall Islands", "MK": "North Macedonia", "ML": "Mali",
+    "MM": "Myanmar", "MN": "Mongolia", "MO": "Macao", "MP": "Northern Mariana Islands", "MQ": "Martinique",
+    "MR": "Mauritania", "MS": "Montserrat", "MT": "Malta", "MU": "Mauritius", "MV": "Maldives",
+    "MW": "Malawi", "MX": "Mexico", "MY": "Malaysia", "MZ": "Mozambique", "NA": "Namibia",
+    "NC": "New Caledonia", "NE": "Niger", "NF": "Norfolk Island", "NG": "Nigeria", "NI": "Nicaragua",
+    "NL": "Netherlands", "NO": "Norway", "NP": "Nepal", "NR": "Nauru", "NU": "Niue",
+    "NZ": "New Zealand", "OM": "Oman", "PA": "Panama", "PE": "Peru", "PF": "French Polynesia",
+    "PG": "Papua New Guinea", "PH": "Philippines", "PK": "Pakistan", "PL": "Poland", "PM": "Saint Pierre and Miquelon",
+    "PN": "Pitcairn", "PR": "Puerto Rico", "PS": "Palestine", "PT": "Portugal", "PW": "Palau",
+    "PY": "Paraguay", "QA": "Qatar", "RE": "Réunion", "RO": "Romania", "RS": "Serbia",
+    "RU": "Russia", "RW": "Rwanda", "SA": "Saudi Arabia", "SB": "Solomon Islands", "SC": "Seychelles",
+    "SD": "Sudan", "SE": "Sweden", "SG": "Singapore", "SH": "Saint Helena, Ascension and Tristan da Cunha", "SI": "Slovenia",
+    "SJ": "Svalbard and Jan Mayen", "SK": "Slovakia", "SL": "Sierra Leone", "SM": "San Marino", "SN": "Senegal",
+    "SO": "Somalia", "SR": "Suriname", "SS": "South Sudan", "ST": "Sao Tome and Principe", "SV": "El Salvador",
+    "SX": "Sint Maarten (Dutch part)", "SY": "Syria", "SZ": "Eswatini", "TC": "Turks and Caicos Islands", "TD": "Chad",
+    "TF": "French Southern Territories", "TG": "Togo", "TH": "Thailand", "TJ": "Tajikistan", "TK": "Tokelau",
+    "TL": "Timor-Leste", "TM": "Turkmenistan", "TN": "Tunisia", "TO": "Tonga", "TR": "Turkey",
+    "TT": "Trinidad and Tobago", "TV": "Tuvalu", "TW": "Taiwan", "TZ": "Tanzania", "UA": "Ukraine",
+    "UG": "Uganda", "UM": "United States Minor Outlying Islands", "US": "United States", "UY": "Uruguay", "UZ": "Uzbekistan",
+    "VA": "Holy See (Vatican City State)", "VC": "Saint Vincent and the Grenadines", "VE": "Venezuela", "VG": "Virgin Islands, British", "VI": "Virgin Islands, U.S.",
+    "VN": "Vietnam", "VU": "Vanuatu", "WF": "Wallis and Futuna", "WS": "Samoa", "XK": "Kosovo",
+    "YE": "Yemen", "YT": "Mayotte", "ZA": "South Africa", "ZM": "Zambia", "ZW": "Zimbabwe"
+}
+NAMES = {**ALL_NAMES, **COUNTRY_NAMES}
+
+
+def cname(cc):
+    return NAMES.get(cc, cc) or "Unknown"
 
 
 def service(port):
@@ -203,8 +262,8 @@ def fetch_tpot():
 def _country_row(src, day, cc, n, ips, targets, dst_cc="", target=TARGET_DSHIELD):
     return {
         "id": f"{src}|country|{cc or 'XX'}|{dst_cc or 'any'}", "kind": "country", "source": src, "date": day,
-        "src_country": cc, "src_country_name": COUNTRY_NAMES.get(cc, cc) or "Unknown", "src_scope": europe_scope(cc),
-        "dst_country": dst_cc, "dst_country_name": COUNTRY_NAMES.get(dst_cc, dst_cc), "target": target,
+        "src_country": cc, "src_country_name": cname(cc), "src_scope": europe_scope(cc),
+        "dst_country": dst_cc, "dst_country_name": cname(dst_cc) if dst_cc else "", "target": target,
         "count": n, "ips": ips, "targets": targets,
     }
 
@@ -223,7 +282,7 @@ def build_rows(ds, tp):
         for i, r in enumerate(ds["ips"][:25], 1):
             cc = r.get("country", "")
             rows.append({"id": f"dshield|ip|{r['ip']}", "kind": "ip", "source": "dshield", "date": day, "rank": i,
-                         "src_ip": r["ip"], "src_country": cc, "src_country_name": COUNTRY_NAMES.get(cc, cc) or "Unknown",
+                         "src_ip": r["ip"], "src_country": cc, "src_country_name": cname(cc),
                          "src_scope": europe_scope(cc), "asname": r.get("asname", ""), "count": r["reports"],
                          "targets": r["targets"], "first_seen": r["firstseen"], "last_seen": r["lastseen"],
                          "target": TARGET_DSHIELD})
@@ -243,7 +302,7 @@ def build_rows(ds, tp):
         for i, (ip, n, cc) in enumerate(tp["ips"], 1):
             cc = iso2(cc)
             rows.append({"id": f"tpot|ip|{ip}", "kind": "ip", "source": "tpot", "date": day, "rank": i, "src_ip": ip,
-                         "src_country": cc, "src_country_name": COUNTRY_NAMES.get(cc, cc) or "Unknown",
+                         "src_country": cc, "src_country_name": cname(cc),
                          "src_scope": europe_scope(cc), "count": n, "target": "Own T-Pot honeypot"})
         for i, (port, n) in enumerate(tp["ports"], 1):
             rows.append({"id": f"tpot|port|{port}", "kind": "port", "source": "tpot", "date": day, "rank": i,

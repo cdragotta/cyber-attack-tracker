@@ -57,6 +57,24 @@
 .cw [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 .cw-def { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; margin: 0; }
 .cw-def b { color: var(--color-fg); font-weight: 600; }
+.cw-am { position: relative; min-height: 260px; }
+.cw-am .land { fill: var(--color-bg); stroke: var(--color-border-line); }
+.cw-am .arc { fill: none; stroke-linecap: round; }
+.cw-am .hit { cursor: default; }
+.cw-am-lede { margin: 0; font-size: var(--cds-font-size-body); line-height: 1.5; max-width: 70ch; }
+.cw-am-lede b { font-weight: 600; }
+.cw-caveat { border-left: 3px solid var(--color-warn); padding: var(--cds-pad-xs) var(--cds-pad-md); margin: 0; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.5; }
+.cw-caveat b { color: var(--color-fg); font-weight: 600; }
+.cw-src { display: inline-flex; gap: 2px; border: 1px solid var(--color-border-line); border-radius: 999px; padding: 2px; }
+.cw-src[hidden] { display: none; }
+.cw-src button { font: inherit; font-size: var(--cds-font-size-caption); border: 0; background: transparent; color: var(--color-fg-muted); padding: 2px var(--cds-pad-sm); border-radius: 999px; cursor: pointer; }
+.cw-src button[aria-pressed="true"] { background: var(--color-fg); color: var(--color-bg); }
+@media (prefers-reduced-motion: no-preference) {
+  .cw-am .arc.flow { stroke-dasharray: 6 10; animation: cw-flow 1.6s linear infinite; }
+  @keyframes cw-flow { to { stroke-dashoffset: -16; } }
+  .cw-am .pulse { animation: cw-pulse 2.4s var(--cds-ease-out) infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes cw-pulse { 0% { opacity: .5; transform: scale(1); } 100% { opacity: 0; transform: scale(3.2); } }
+}
 </style>
 
 <div class="cw" id="cw">
@@ -76,6 +94,7 @@
     <button type="button" role="tab" data-tab="overview" aria-selected="true">Overview</button>
     <button type="button" role="tab" data-tab="ransomware" aria-selected="false">Ransomware claims</button>
     <button type="button" role="tab" data-tab="attacks" aria-selected="false">Reported attacks</button>
+    <button type="button" role="tab" data-tab="attackmap" aria-selected="false">Attack map</button>
     <button type="button" role="tab" data-tab="vulns" aria-selected="false">Exploited vulnerabilities</button>
     <button type="button" role="tab" data-tab="alerts" aria-selected="false">Alerts and news</button>
     <button type="button" role="tab" data-tab="history" aria-selected="false">History</button>
@@ -178,6 +197,82 @@
         </table>
       </div>
     </article>
+  </section>
+
+  <!-- ============ ATTACK MAP ============ -->
+  <section class="cw-page" id="attackmap" data-page="attackmap" hidden>
+    <p class="cw-am-lede" id="am-lede" data-source="attackmap"><span class="dash-skeleton">—</span></p>
+    <p class="cw-caveat"><b>What this shows:</b> scanning and attack traffic seen by honeypots and firewall sensors in the SANS Internet Storm Center's DShield network, for the last complete day. These are <b>sensor observations</b>, mostly automated scanning and password guessing (many of the busiest sources are internet-wide research or commercial scanners), not confirmed incidents, and they are never added to the claims or reported attacks elsewhere on this dashboard. <b>Source country is where the source IP's network is registered, not where the attacker is.</b> DShield does not publish where its sensors are, so arcs end at the dashboard's Europe focus point, not at a real target. The region switch filters by source network location. Inspired by the T-Pot Attack Map.</p>
+    <div class="cw-kpis">
+      <div class="cw-kpi" id="am-kpi-reports">
+        <span class="cw-kpi-label" id="am-kpi-day">Reports logged · last complete day</span>
+        <span class="cw-kpi-value dash-skeleton" data-source="attackmap" data-field="count">—</span>
+        <span class="cw-kpi-sub" id="am-kpi-reports-sub">All DShield sensors worldwide</span>
+      </div>
+      <div class="cw-kpi" id="am-kpi-sources">
+        <span class="cw-kpi-label">Distinct source IPs · same day</span>
+        <span class="cw-kpi-value dash-skeleton" data-source="attackmap" data-field="sources">—</span>
+        <span class="cw-kpi-sub">Seen by any DShield sensor</span>
+      </div>
+      <div class="cw-kpi" id="am-kpi-share">
+        <span class="cw-kpi-label" id="am-kpi-share-label">Busiest sources hosted in Europe</span>
+        <span class="cw-kpi-value"><span class="dash-skeleton" id="am-share" data-source="attack_scope" data-field="share_pct" data-where="scope=europe">—</span><span id="am-share-pct"></span></span>
+        <span class="cw-kpi-sub" id="am-kpi-share-sub">Share of reports from the top 100 source IPs</span>
+      </div>
+    </div>
+    <div class="cw-grid">
+      <article class="cw-card wide" id="am-map-card">
+        <div class="cw-tools" style="justify-content: space-between">
+          <h2 id="am-map-title">Where attack traffic comes from</h2>
+          <div class="cw-src" id="am-src" role="group" aria-label="Data source" hidden>
+            <button type="button" data-src="dshield" aria-pressed="true">DShield</button>
+            <button type="button" data-src="tpot" aria-pressed="false">My T-Pot</button>
+          </div>
+        </div>
+        <p class="cw-note" id="am-map-note">Source networks of the 100 busiest attacking IPs, by country. Circle and arc width grow with reports. Hover for numbers.</p>
+        <div class="cw-am" id="am-map" data-source="attackmap"></div>
+      </article>
+      <article class="cw-card" id="am-countries-card">
+        <h2>Top source countries</h2>
+        <p class="cw-note">Reports from the 100 busiest source IPs, grouped by the country of their network.</p>
+        <div class="cw-tablebox" style="max-height: 24rem">
+          <table id="am-countries" data-source="attackmap" data-row-key="id">
+            <thead><tr>
+              <th data-field="src_country_name"><button type="button">Country</button></th>
+              <th data-field="count"><button type="button">Reports</button></th>
+              <th data-field="ips"><button type="button">IPs</button></th>
+              <th data-field="src_scope" class="hide-narrow"><button type="button">Region</button></th>
+            </tr></thead><tbody></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="cw-card" id="am-ports-card">
+        <h2>Most-targeted ports</h2>
+        <p class="cw-note">Reports per destination port, last complete day, with the usual service on that port.</p>
+        <div class="cw-chart" id="am-ports" data-source="attackmap"></div>
+      </article>
+      <article class="cw-card wide" id="am-ips-card">
+        <h2>Busiest source IPs</h2>
+        <p class="cw-note">The 25 IPs DShield sensors reported most often. Reports = log lines; targets = distinct sensor IPs hit. Network = the registered owner of the IP's address block.</p>
+        <div class="cw-tablebox" style="max-height: 28rem">
+          <table id="am-ips" data-source="attackmap" data-row-key="id">
+            <thead><tr>
+              <th data-field="rank"><button type="button">#</button></th>
+              <th data-field="src_ip"><button type="button">Source IP</button></th>
+              <th data-field="src_country_name"><button type="button">Country</button></th>
+              <th data-field="asname" class="hide-narrow"><button type="button">Network</button></th>
+              <th data-field="count"><button type="button">Reports</button></th>
+              <th data-field="targets" class="hide-narrow"><button type="button">Targets</button></th>
+            </tr></thead><tbody></tbody>
+          </table>
+        </div>
+      </article>
+      <article class="cw-card wide" id="am-days-card">
+        <h2>Reports per day</h2>
+        <p class="cw-note">All reports logged by DShield sensors worldwide, last two weeks.</p>
+        <div class="cw-chart" id="am-days" data-source="attackmap"></div>
+      </article>
+    </div>
   </section>
 
   <!-- ============ VULNS ============ -->
@@ -323,6 +418,24 @@ dash.calc('by_country', {
   },
 });
 
+dash.calc('attack_scope', {
+  title: 'Attack sources by region',
+  description: 'Reports from the busiest DShield source IPs (those with a known country), and the share whose networks are in Europe, the EU27 or anywhere.',
+  inputs: ['attackmap'],
+  fn: (attackmap) => {
+    const EUROPE = ['EU27', 'UK', 'Wider Europe'];
+    const rows = attackmap.filter((r) => r.kind === 'country' && r.source === 'dshield');
+    const total = rows.reduce((t, r) => t + Number(r.count || 0), 0);
+    const pick = { europe: (s) => EUROPE.includes(s), eu27: (s) => s === 'EU27', world: () => true };
+    return Object.entries(pick).map(([scope, ok]) => {
+      const sel = rows.filter((r) => ok(r.src_scope));
+      const reports = sel.reduce((t, r) => t + Number(r.count || 0), 0);
+      return { scope, reports, ips: sel.reduce((t, r) => t + Number(r.ips || 0), 0), countries: sel.length, total,
+        share_pct: total ? Math.round((100 * reports) / total) : 0 };
+    });
+  },
+});
+
 dash.calc('by_sector', {
   title: 'Claims by sector and region',
   description: 'Ransomware claims per victim sector over the last 30 days, for Europe, EU27 and the world.',
@@ -413,7 +526,7 @@ window.CW = (() => {
     box.replaceChildren(); if (keepTip) box.appendChild(keepTip);
     const W = Math.max(280, box.clientWidth), rowH = 26, top = 4;
     const data = rows.slice(0, opts.limit || 12);
-    if (!data.length) { const p = document.createElement('p'); p.className = 'cw-note'; p.textContent = 'No claims in this region in the last 30 days.'; box.appendChild(p); return; }
+    if (!data.length) { const p = document.createElement('p'); p.className = 'cw-note'; p.textContent = opts.empty || 'No claims in this region in the last 30 days.'; box.appendChild(p); return; }
     const H = top + data.length * rowH + 4;
     const svg = d3.select(box).insert('svg', ':first-child').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', opts.label || 'Bar chart');
     const meas = svg.append('text').attr('font-size', 12).attr('font-family', 'var(--font-anthropic-sans)');
@@ -449,6 +562,7 @@ window.CW = (() => {
     const tb = el.querySelector('tbody');
     tb.replaceChildren(...rows.slice(0, 600).map((r) => {
       const tr = document.createElement('tr');
+      if (cfg.key && r[cfg.key] != null) tr.dataset.key = String(r[cfg.key]);
       cfg.cells.forEach((c) => { const td = document.createElement('td'); if (c.cls) td.className = c.cls; c.fill(td, r); tr.appendChild(td); });
       return tr;
     }));
@@ -609,6 +723,200 @@ window.CW = (() => {
 })();
 </script>
 
+<script src="world.js"></script>
+
+<script>
+/* ---------- attack map (own implementation, inspired by the T-Pot Attack Map) ---------- */
+(() => {
+  const CW = window.CW;
+  const FOCUS = { lon: 10, lat: 50, label: 'Europe (focus)' }; // fixed reference point, not data
+  const LAT_TOP = 84, LAT_BOT = -58;
+  let src = 'dshield';
+  const srcBox = document.getElementById('am-src');
+  srcBox.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { src = b.dataset.src; draw(); }));
+  const centroid = () => {
+    const m = new Map();
+    (window.CW_WORLD || []).forEach((f) => { if (f[0] && !m.has(f[0])) m.set(f[0], [f[2], f[3]]); });
+    return m;
+  };
+  const latest = (rows) => rows.filter((r) => r.kind === 'day' && r.source === 'dshield').sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+
+  const drawMap = (rows) => {
+    const box = document.getElementById('am-map');
+    const keepTip = box.querySelector('.cw-tip'); box.replaceChildren(); if (keepTip) box.appendChild(keepTip);
+    if (!window.CW_WORLD) { box.classList.add('dash-skeleton'); return; }
+    const W = Math.max(300, box.clientWidth), k = W / 360, H = (LAT_TOP - LAT_BOT) * k;
+    const px = (lon, lat) => [(lon + 180) * k, (LAT_TOP - lat) * k];
+    const cen = centroid();
+    const sc = CW.scope();
+    const all = rows.filter((r) => r.kind === 'country' && r.source === src && r.src_country && cen.has(r.src_country));
+    const max = d3.max(all, (r) => +r.count) || 1;
+    const wScale = d3.scaleSqrt([0, max], [0.6, Math.max(3, W / 160)]);
+    const rScale = d3.scaleSqrt([0, max], [2, Math.max(6, W / 70)]);
+    const lo = CW.color('var(--color-bg)'), hi = CW.color(dash.colors[0]), mix = d3.interpolateRgb(lo, hi);
+    const fillScale = d3.scaleSqrt([0, max], [0.15, 0.85]);
+    const byCC = d3.rollup(all, (v) => d3.sum(v, (r) => +r.count), (r) => r.src_country);
+    const svg = d3.select(box).insert('svg', ':first-child').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`)
+      .attr('role', 'img').attr('aria-label', 'World map of attack sources with arcs toward their targets');
+    const land = svg.append('g').attr('transform', `translate(0,${-(90 - LAT_TOP) * k}) scale(${k})`);
+    window.CW_WORLD.forEach((f) => {
+      if (!f[4]) return;
+      const n = byCC.get(f[0]);
+      const inSc = !n || CW.inScope(scopeOf(f[0]));
+      land.append('path').attr('d', f[4]).attr('class', 'land').attr('vector-effect', 'non-scaling-stroke')
+        .attr('fill', n && inSc ? mix(fillScale(n)) : 'var(--color-bg)');
+    });
+    const t = CW.tip(box);
+    const target = (r) => (r.dst_country && cen.has(r.dst_country) ? { lon: cen.get(r.dst_country)[0], lat: cen.get(r.dst_country)[1], label: r.dst_country_name || r.dst_country } : FOCUS);
+    const order = all.slice().sort((a, b) => a.count - b.count); // big arcs on top
+    const arcs = svg.append('g'), dots = svg.append('g'), targets = new Map();
+    order.forEach((r) => {
+      const inSc = CW.inScope(r.src_scope);
+      const [lon, lat] = cen.get(r.src_country);
+      const tg = target(r); targets.set(tg.label, tg);
+      const [x0, y0] = px(lon, lat), [x1, y1] = px(tg.lon, tg.lat);
+      const dx = x1 - x0, dy = y1 - y0, dist = Math.hypot(dx, dy);
+      const col = inSc ? dash.colors[0] : 'var(--cds-chart-muted)';
+      if (dist > 4) {
+        const bend = Math.min(0.35 * dist, 120 * k);
+        const cx = (x0 + x1) / 2, cy = Math.min(y0, y1) - bend * 0.6; // lift every arc northward
+        const d = `M${x0},${y0}Q${cx},${cy} ${x1},${y1}`;
+        arcs.append('path').attr('d', d).attr('class', 'arc').attr('stroke', col).attr('stroke-opacity', inSc ? 0.28 : 0.15).attr('stroke-width', wScale(r.count));
+        if (inSc) arcs.append('path').attr('d', d).attr('class', 'arc flow').attr('stroke', col).attr('stroke-opacity', 0.9).attr('stroke-width', Math.max(1, wScale(r.count) * 0.6));
+      }
+      dots.append('circle').attr('cx', x0).attr('cy', y0).attr('r', rScale(r.count)).attr('fill', col).attr('fill-opacity', inSc ? 0.75 : 0.35)
+        .attr('stroke', 'var(--color-panel)').attr('stroke-width', 1).attr('class', 'hit')
+        .on('mousemove', (ev) => t.show(ev, [[r.src_country_name, ''], ['Reports', CW.fmt(r.count)], ...(r.ips ? [['Source IPs', CW.fmt(r.ips)]] : []), ['Target', r.dst_country_name || r.target]]))
+        .on('mouseleave', () => t.hide());
+    });
+    const tg = svg.append('g');
+    targets.forEach((p) => {
+      const [x, y] = px(p.lon, p.lat);
+      tg.append('circle').attr('cx', x).attr('cy', y).attr('r', 5).attr('fill', 'var(--cds-chart-status-critical)').attr('class', 'pulse');
+      tg.append('circle').attr('cx', x).attr('cy', y).attr('r', 4).attr('fill', 'var(--cds-chart-status-critical)').attr('stroke', 'var(--color-panel)').attr('stroke-width', 1.5);
+      const lbl = tg.append('text').attr('x', x + 8).attr('y', y - 8).attr('font-size', 11).attr('font-weight', 600).attr('fill', 'var(--color-fg)')
+        .attr('paint-order', 'stroke').attr('stroke', 'var(--color-panel)').attr('stroke-width', 3).text(p.label);
+      const lw = lbl.node().getComputedTextLength();
+      if (x + 8 + lw > W) lbl.attr('x', x - 8).attr('text-anchor', 'end');
+    });
+    if (!all.length) {
+      const p = document.createElement('p'); p.className = 'cw-note'; p.textContent = 'No source countries in the latest data.'; box.appendChild(p);
+    }
+  };
+  const scopeOf = (cc) => {
+    const r = (dash.data('attackmap').data || []).find((x) => x.src_country === cc && x.src_scope);
+    return r ? r.src_scope : 'Unknown';
+  };
+
+  const drawKpis = (rows) => {
+    const day = latest(rows);
+    const kr = document.querySelector('#am-kpi-reports .cw-kpi-value'), ks = document.querySelector('#am-kpi-sources .cw-kpi-value');
+    [kr, ks].forEach((el) => {
+      if (!day) { el.textContent = '—'; el.removeAttribute('data-where'); return; }
+      el.classList.remove('dash-skeleton');
+      el.setAttribute('data-where', 'id=' + encodeURIComponent(day.id));
+      el.textContent = CW.fmt(+day[el.dataset.field]);
+    });
+    if (day) document.getElementById('am-kpi-day').textContent = 'Reports logged · ' + CW.fdate(day.date);
+    const sc = CW.scope();
+    const shareEl = document.getElementById('am-share'), pct = document.getElementById('am-share-pct');
+    shareEl.setAttribute('data-where', 'scope=' + sc);
+    const a = dash.data('attack_scope');
+    const row = a.status === 'ok' ? (a.data || []).find((x) => x.scope === sc) : null;
+    document.getElementById('am-kpi-share-label').textContent = sc === 'world' ? 'Busiest sources with a known country' : `Busiest sources hosted in ${CW.scopeName(sc)}`;
+    if (!row) { shareEl.textContent = '—'; pct.textContent = ''; return; }
+    shareEl.classList.remove('dash-skeleton');
+    shareEl.textContent = String(row.share_pct); pct.textContent = '%';
+    document.getElementById('am-kpi-share-sub').textContent = `${CW.fmt(row.ips)} of the top IPs, ${CW.fmt(row.countries)} countries`;
+    // takeaway
+    const lede = document.getElementById('am-lede'); lede.replaceChildren();
+    const ports = rows.filter((r) => r.kind === 'port' && r.source === 'dshield').sort((x, y) => x.rank - y.rank);
+    const top = rows.filter((r) => r.kind === 'country' && r.source === 'dshield' && CW.inScope(r.src_scope)).sort((x, y) => y.count - x.count)[0];
+    const b = (txt, where, field) => { const e = document.createElement('b'); e.textContent = txt; e.dataset.source = 'attackmap'; e.dataset.field = field; e.dataset.where = 'id=' + encodeURIComponent(where); return e; };
+    if (day) lede.append(`On ${CW.fdate(day.date)} DShield sensors logged `, b(CW.fmt(+day.count), day.id, 'count'), ' reports. ');
+    if (top) lede.append(sc === 'world' ? 'The busiest source networks were in ' : `Among sources hosted in ${CW.scopeName(sc)}, the busiest networks were in `, b(top.src_country_name, top.id, 'src_country_name'), '. ');
+    if (ports[0]) lede.append('Most-targeted port: ', b(String(ports[0].dst_port), ports[0].id, 'dst_port'), ` (${ports[0].protocol}).`);
+  };
+
+  const drawPorts = (rows) => {
+    const box = document.getElementById('am-ports');
+    const data = rows.filter((r) => r.kind === 'port' && r.source === src).sort((a, b) => a.rank - b.rank)
+      .map((r) => ({ label: `${r.dst_port} · ${r.protocol}`, n: +r.count }));
+    CW.bars(box, data, 'label', { limit: 12, label: 'Reports by destination port', empty: 'No port data for this source yet.' });
+  };
+
+  const drawDays = (rows) => {
+    const box = document.getElementById('am-days');
+    const keepTip = box.querySelector('.cw-tip'); box.replaceChildren(); if (keepTip) box.appendChild(keepTip);
+    const data = rows.filter((r) => r.kind === 'day' && r.source === 'dshield').map((r) => ({ date: r.date, n: +r.count, s: +r.sources })).sort((a, b) => (a.date < b.date ? -1 : 1));
+    if (!data.length) { const p = document.createElement('p'); p.className = 'cw-note'; p.textContent = 'No daily totals yet.'; box.appendChild(p); return; }
+    const W = Math.max(300, box.clientWidth), H = 200, m = { t: 10, r: 8, b: 26, l: 8 };
+    const y = d3.scaleLinear([0, d3.max(data, (r) => r.n) || 1], [H - m.b, m.t]).nice();
+    const svg = d3.select(box).insert('svg', ':first-child').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img').attr('aria-label', 'DShield reports per day');
+    const ticks = y.ticks(4), compact = new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 });
+    const meas = svg.append('text').attr('font-size', 11);
+    m.l = 8 + (d3.max(ticks, (v) => { meas.text(compact.format(v)); return meas.node().getComputedTextLength(); }) || 20); meas.remove();
+    const x = d3.scaleBand(data.map((r) => r.date), [m.l, W - m.r]).padding(0.28);
+    svg.append('g').selectAll('line').data(ticks).join('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').selectAll('text').data(ticks).join('text').attr('x', m.l - 6).attr('y', (d) => y(d) + 4).attr('text-anchor', 'end').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text((v) => compact.format(v));
+    const step = Math.ceil(data.length / Math.max(2, Math.floor(W / 64)));
+    svg.append('g').selectAll('text').data(data.filter((r, i) => i % step === 0)).join('text').attr('x', (r) => x(r.date) + x.bandwidth() / 2).attr('y', H - 8).attr('text-anchor', 'middle').attr('font-size', 11).attr('fill', 'var(--color-fg-muted)').text((r) => CW.fdate(r.date));
+    const t = CW.tip(box);
+    svg.append('g').selectAll('rect').data(data).join('rect').attr('x', (r) => x(r.date)).attr('width', x.bandwidth()).attr('y', (r) => y(r.n)).attr('height', (r) => y(0) - y(r.n)).attr('rx', 4)
+      .attr('fill', (r, i) => (i === data.length - 1 ? dash.colors[0] : 'var(--cds-chart-muted)'))
+      .on('mousemove', (ev, r) => t.show(ev, [[CW.fdate(r.date), ''], ['Reports', CW.fmt(r.n)], ['Source IPs', CW.fmt(r.s)]])).on('mouseleave', () => t.hide());
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0)).attr('stroke', 'var(--cds-chart-axis)');
+  };
+
+  const drawTables = (rows) => {
+    CW.table('am-countries', {
+      redraw: draw, key: 'id', sort: ['count', -1],
+      rows: rows.filter((r) => r.kind === 'country' && r.source === src && CW.inScope(r.src_scope)).map((r) => ({ ...r, count: +r.count, ips: r.ips == null || r.ips === '' ? null : +r.ips })),
+      fields: ['src_country_name'],
+      cells: [
+        { fill: (td, r) => { td.textContent = r.src_country_name || 'Unknown'; } },
+        { cls: 'num', fill: (td, r) => { td.textContent = CW.fmt(r.count); } },
+        { cls: 'num', fill: (td, r) => { td.textContent = r.ips == null ? '—' : CW.fmt(r.ips); } },
+        { cls: 'hide-narrow', fill: (td, r) => { td.textContent = r.src_scope; } },
+      ],
+    });
+    CW.table('am-ips', {
+      redraw: draw, key: 'id', sort: ['rank', 1],
+      rows: rows.filter((r) => r.kind === 'ip' && r.source === src && CW.inScope(r.src_scope)).map((r) => ({ ...r, rank: +r.rank, count: +r.count, targets: r.targets == null || r.targets === '' ? null : +r.targets })),
+      fields: ['src_ip'],
+      cells: [
+        { cls: 'num', fill: (td, r) => { td.textContent = String(r.rank); } },
+        { fill: (td, r) => CW.link(td, r.src_ip, r.source === 'dshield' ? 'https://isc.sans.edu/ipinfo/' + encodeURIComponent(r.src_ip) : '') },
+        { fill: (td, r) => { td.textContent = r.src_country_name || 'Unknown'; } },
+        { cls: 'clip hide-narrow', fill: (td, r) => { td.textContent = r.asname || ''; } },
+        { cls: 'num', fill: (td, r) => { td.textContent = CW.fmt(r.count); } },
+        { cls: 'num hide-narrow', fill: (td, r) => { td.textContent = r.targets == null ? '—' : CW.fmt(r.targets); } },
+      ],
+    });
+  };
+
+  const draw = () => {
+    const ids = ['am-map', 'am-ports', 'am-days'].map((i) => document.getElementById(i));
+    const ok = ids.map((el) => CW.state(el, 'attackmap')).every(Boolean);
+    const a = dash.data('attackmap');
+    if (!ok || a.status !== 'ok') {
+      if (a.status === 'error') document.getElementById('am-lede').textContent = 'The attack map data failed to load. See Sources.';
+      return;
+    }
+    const rows = a.data || [];
+    const hasTpot = rows.some((r) => r.source === 'tpot');
+    srcBox.hidden = !hasTpot;
+    if (!hasTpot) src = 'dshield';
+    srcBox.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.src === src)));
+    document.getElementById('am-map-note').textContent = src === 'tpot'
+      ? 'Your own T-Pot honeypot, last 24 hours: arcs run from source countries to the honeypot\'s country.'
+      : 'Source networks of the 100 busiest attacking IPs, by country. Circle and arc width grow with reports. Hover for numbers.';
+    drawKpis(rows); drawMap(rows); drawPorts(rows); drawDays(rows); drawTables(rows);
+  };
+  window.CW.drawAttackMap = draw;
+})();
+</script>
+
 <script>
 /* ---------- other pages ---------- */
 (() => {
@@ -621,7 +929,7 @@ window.CW = (() => {
     const c = dash.data('claims');
     if (c.status !== 'ok') return;
     CW.table('claims-table', {
-      redraw: drawRansomware, search: 'claims-q', count: 'claims-n',
+      redraw: drawRansomware, key: 'id', search: 'claims-q', count: 'claims-n',
       rows: c.data.filter((r) => CW.inScope(r.scope)),
       fields: ['victim', 'group', 'country_name', 'sector', 'domain'],
       cells: [
@@ -637,7 +945,7 @@ window.CW = (() => {
   const drawAttacks = () => {
     const c = dash.data('incidents'); if (c.status !== 'ok') return;
     CW.table('attacks-table', {
-      redraw: drawAttacks, search: 'attacks-q', count: 'attacks-n',
+      redraw: drawAttacks, key: 'id', search: 'attacks-q', count: 'attacks-n',
       rows: c.data.filter((r) => CW.inScope(r.scope)),
       fields: ['title', 'victim', 'country_name', 'summary', 'title_original', 'summary_original'],
       cells: [
@@ -651,7 +959,7 @@ window.CW = (() => {
   const drawVulns = () => {
     const c = dash.data('vulns'); if (c.status !== 'ok') return;
     CW.table('vulns-table', {
-      redraw: drawVulns, search: 'vulns-q', count: 'vulns-n',
+      redraw: drawVulns, key: 'id', search: 'vulns-q', count: 'vulns-n',
       rows: c.data.map((r) => ({ ...r, epss: r.epss === null || r.epss === '' ? null : Number(r.epss) })),
       fields: ['id', 'vendor', 'product', 'name', 'euvd_id'],
       cells: [
@@ -668,7 +976,7 @@ window.CW = (() => {
   const drawAlerts = () => {
     const a = dash.data('alerts');
     if (a.status === 'ok') CW.table('alerts-table', {
-      redraw: drawAlerts, search: 'alerts-q', count: 'alerts-n',
+      redraw: drawAlerts, search: 'alerts-q', key: 'id', count: 'alerts-n',
       rows: a.data.filter((r) => CW.inScope(r.scope)),
       fields: ['cert', 'title', 'summary', 'country_name', 'title_original'],
       cells: [
@@ -679,7 +987,7 @@ window.CW = (() => {
     });
     const n = dash.data('news');
     if (n.status === 'ok') CW.table('news-table', {
-      redraw: drawAlerts, search: 'news-q', count: 'news-n',
+      redraw: drawAlerts, search: 'news-q', key: 'id', count: 'news-n',
       rows: n.data.filter((r) => CW.scope() === 'world' || r.europe === true || r.europe === 'true'),
       fields: ['title', 'domain', 'mentions', 'publisher_country', 'title_original'],
       cells: [
@@ -715,7 +1023,7 @@ window.CW = (() => {
   const drawSources = () => {
     const s = dash.data('sources'); if (s.status !== 'ok') return;
     CW.table('sources-table', {
-      redraw: drawSources, sort: ['source', 1],
+      redraw: drawSources, key: 'source', sort: ['source', 1],
       rows: s.data.map((r) => ({ ...r, records: r.records === null || r.records === '' ? null : Number(r.records) })),
       fields: ['source'],
       cells: [
@@ -728,7 +1036,7 @@ window.CW = (() => {
       ],
     });
   };
-  const pages = { ransomware: drawRansomware, attacks: drawAttacks, vulns: drawVulns, alerts: drawAlerts, history: drawHistory, sources: drawSources };
+  const pages = { ransomware: drawRansomware, attacks: drawAttacks, attackmap: () => window.CW.drawAttackMap(), vulns: drawVulns, alerts: drawAlerts, history: drawHistory, sources: drawSources };
   window.CW.draw = () => { window.CW.drawOverview(); const f = pages[window.CW.current]; if (f) f(); };
   dash.onData(() => window.CW.draw());
   window.CW.show(window.CW.current);

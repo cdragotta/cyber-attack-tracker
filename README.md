@@ -27,7 +27,7 @@ The dashboard's **Attack map** tab is inspired by the [T-Pot Attack Map](https:/
 The T-Pot map only shows events from a honeypot you run yourself, so by default the tab uses public telemetry from the **SANS Internet Storm Center / DShield** sensor network instead:
 
 - `sources/attacks/100/<yesterday>`: the 100 busiest scanning/attacking IPs reported by DShield sensors.
-- `ip/<ip>`: the country and AS name of the network hosting each of the top 40 (cached 30 days in `data/attackmap_ipcache.json`).
+- `ip/<ip>`: the country and AS name of the network hosting each of each of them (cached 30 days in `data/attackmap_ipcache.json`).
 - `topports/records/20/<yesterday>`: the most-targeted ports. `dailysummary`: daily totals for two weeks.
 
 Caveats, also shown on the page:
@@ -35,7 +35,7 @@ Caveats, also shown on the page:
 - These are **sensor observations** (mostly automated scanning and brute-force traffic), not confirmed incidents, and are never added to the other counts.
 - **Source country = where the source IP's network is registered**, not where the attacker is (VPNs, proxies, cloud hosts and botnets hide that).
 - DShield does not publish where its sensors are, so the arcs end at the dashboard's Europe focus point, not at a real target.
-- Country totals cover only the top 40 source IPs, not all traffic.
+- Country totals cover only the 100 busiest source IPs, not all traffic.
 
 Plug in your own T-Pot later: add repository secrets `TPOT_ES_URL` (its Elasticsearch, e.g. `https://my-tpot:64298`) and, if needed, `TPOT_ES_USER` / `TPOT_ES_PASS`. The daily job then also aggregates the last 24 h of events (source country → honeypot country, IPs, ports) as rows with `source: "tpot"`. It is skipped when the secret is unset. The Elasticsearch must be reachable from GitHub's runners (or run `TPOT_ES_URL=... python scripts/tracker.py attackmap` on your own machine and push). This path is untested until a T-Pot exists.
 
