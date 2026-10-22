@@ -29,5 +29,5 @@ jobs:
           git add data
           git diff --cached --quiet && exit 0
           git commit -m "data: vulnerabilities $(date -u +%Y-%m-%dT%H:%MZ)"
-          git pull --rebase -X ours origin main || true
+          git pull --rebase -X theirs origin main || { git rebase --abort; git pull --no-rebase -X ours origin main; }
           git push

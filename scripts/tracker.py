@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 
-from common import (COUNTRY_NAMES, NAME_TO_ISO, clean, days_ago, europe_scope, first, http_get, iso2,
+from common import (all_health, COUNTRY_NAMES, NAME_TO_ISO, clean, days_ago, europe_scope, first, http_get, iso2,
                     is_europe, load, merge_records, now_iso, now_utc, record_health, save, slug, to_date)
 
 RL = "https://api.ransomware.live/v2"
@@ -93,6 +93,8 @@ def cmd_ransomware():
             if not isinstance(a, dict):
                 continue
             title = clean(first(a, "title", "victim", "name"), 200)
+            if not re.search(r"[A-Za-z]{3}", title):
+                title = clean(first(a, "victim", "name", "domain"), 200) or title
             cc = iso2(first(a, "country", "country_code"))
             date = to_date(first(a, "date", "attackdate", "added", "published"))
             if not title or not date:
@@ -184,12 +186,12 @@ def cmd_ransomware():
 # ===================================================================== alerts
 CERT_FEEDS = [
     # (CERT name, ISO-2 / EU, feed URL)
-    ("CERT-EU", "EU", "https://cert.europa.eu/publications/threat-intelligence-rss"),
-    ("CERT-EU", "EU", "https://cert.europa.eu/publications/security-advisories-rss"),
+    ("CERT-EU", "EU", "https://cert.europa.eu/publications/threat-intelligence-rss|https://www.cert.europa.eu/publications/threat-intelligence-rss"),
+    ("CERT-EU", "EU", "https://cert.europa.eu/publications/security-advisories-rss|https://www.cert.europa.eu/publications/security-advisories-rss"),
     ("CERT-FR", "FR", "https://www.cert.ssi.gouv.fr/feed/"),
     ("UK NCSC", "GB", "https://www.ncsc.gov.uk/api/1/services/v1/news-rss-feed.xml"),
     ("NCSC NL", "NL", "https://feeds.ncsc.nl/nieuws.rss"),
-    ("CCB Belgium", "BE", "https://ccb.belgium.be/advisories.xml"),
+    ("CCB Belgium", "BE", "https://ccb.belgium.be/advisories.xml|https://ccb.belgium.be/news.xml|https://ccb.belgium.be/en/rss.xml"),
     ("INCIBE-CERT", "ES", "https://www.incibe.es/en/incibe-cert/alerta-temprana/avisos/feed"),
     ("CERT.PL", "PL", "https://cert.pl/en/rss.xml"),
     ("CERT.at", "AT", "https://cert.at/cert-at.en.blog.rss_2.0.xml"),
@@ -198,7 +200,7 @@ CERT_FEEDS = [
     ("NCSC-FI", "FI", "https://www.kyberturvallisuuskeskus.fi/feed/rss/en"),
     ("CSIRT Italia", "IT", "https://www.acn.gov.it/portale/feedrss/-/journal/rss/20119/723192"),
     ("CERT.LV", "LV", "https://cert.lv/en/feed/rss/all"),
-    ("CISA", "US", "https://www.cisa.gov/cybersecurity-advisories/all.xml"),
+    ("CISA", "US", "https://www.cisa.gov/cybersecurity-advisories/all.xml|https://www.cisa.gov/uscert/ncas/all.xml|https://www.cisa.gov/news.xml"),
 ]
 
 
@@ -224,10 +226,27 @@ def parse_feed(text):
 
 
 def cmd_alerts():
-    new, ok_feeds, errors = [], 0, []
-    for cert, cc, url in CERT_FEEDS:
+    new, ok_feeds, errors, detail = [], 0, [], {}
+    browser = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36 cyber-attack-tracker"}
+    for cert, cc, urls in CERT_FEEDS:
+        items, err = None, ""
+        for url in urls.split("|"):
+            for hdr in (None, browser):
+                try:
+                    items = parse_feed(http_get(url, as_json=False, timeout=40, retries=0, headers=hdr))
+                    break
+                except Exception as e:
+                    err = f"{url}: {str(e)[:120]}"
+            if items is not None:
+                break
+        key = f"{cert} ({urls.split('|')[0].split('/')[-1] or 'feed'})"
+        if items is None:
+            errors.append(f"{cert}: {err}")
+            detail[key] = "failed: " + err
+            continue
+        detail[key] = f"ok, {len(items)} items"
         try:
-            for it in parse_feed(http_get(url, as_json=False, timeout=40, retries=1))[:40]:
+            for it in items[:40]:
                 date = to_date(first(it, "pubdate", "published", "updated", "date"))
                 title = clean(it.get("title"), 220)
                 link = (it.get("link") or "").strip()
@@ -244,11 +263,12 @@ def cmd_alerts():
                 })
             ok_feeds += 1
         except Exception as e:
-            errors.append(f"{cert}: {str(e)[:80]}")
+            errors.append(f"{cert}: {str(e)[:120]}")
     merged = merge_records(load("alerts.json", []), new, keep_days=180)
     save("alerts.json", merged)
     record_health("cert-rss", ok_feeds > 0, len(new),
-                  error=(f"{ok_feeds}/{len(CERT_FEEDS)} feeds ok; " + "; ".join(errors)) if errors else "")
+                  error=(f"{ok_feeds}/{len(CERT_FEEDS)} feeds ok; " + "; ".join(errors)) if errors else "",
+                  detail=detail)
 
 
 # ===================================================================== vulnerabilities
@@ -357,12 +377,17 @@ def mentioned_countries(text):
 
 
 def cmd_news():
-    new = []
+    new, errors = [], []
     try:
         for q in GDELT_QUERIES:
             url = ("https://api.gdeltproject.org/api/v2/doc/doc?mode=artlist&format=json&sort=datedesc"
                    "&maxrecords=250&timespan=2d&query=" + urllib_quote(q))
-            d = http_get(url, timeout=60, retries=1)
+            try:
+                d = http_get(url, timeout=90, retries=1)
+            except Exception as e:
+                errors.append(str(e)[:250])
+                time.sleep(7)
+                continue
             for a in d.get("articles", []) if isinstance(d, dict) else []:
                 title = clean(a.get("title"), 220)
                 if not title:
@@ -387,7 +412,7 @@ def cmd_news():
                 seen.add(k)
                 dedup.append(n)
         save("news.json", merge_records(load("news.json", []), dedup, keep_days=14))
-        record_health("gdelt", True, len(dedup))
+        record_health("gdelt", bool(dedup), len(dedup), error=" | ".join(errors))
     except Exception as e:
         record_health("gdelt", False, error=str(e))
 
@@ -502,7 +527,7 @@ def cmd_build():
         "news": news[:150],
         "weekly_claims": [{"week": w, **v} for w, v in sorted(weekly.items())],
         "eurepoc": load("eurepoc_summary.json", None),
-        "sources": load("sources.json", {}),
+        "sources": all_health(),
     }
     save("dashboard.json", bundle)
     # one flat row-file per panel, for dashboards that load datasets separately

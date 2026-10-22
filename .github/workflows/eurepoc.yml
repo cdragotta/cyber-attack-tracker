@@ -1,12 +1,15 @@
 name: Refresh EuRepoC history (quarterly)
 on:
   schedule:
-    - cron: "11 6 1 */3 *"   # quarterly
+    - cron: "11 6 1 */3 *"   # quarterly (picked up by the next 2-hourly build)
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths: [".github/workflows/eurepoc.yml"]
 permissions:
   contents: write
 concurrency:
-  group: data-update
+  group: eurepoc-update
   cancel-in-progress: false
 jobs:
   update:
@@ -18,7 +21,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Fetch and build
-        run: python scripts/tracker.py eurepoc build
+        run: python scripts/tracker.py eurepoc
       - name: Commit data
         run: |
           git config user.name "tracker-bot"
@@ -26,5 +29,5 @@ jobs:
           git add data
           git diff --cached --quiet && exit 0
           git commit -m "data: EuRepoC history $(date -u +%Y-%m-%dT%H:%MZ)"
-          git pull --rebase -X ours origin main || true
+          git pull --rebase -X theirs origin main || { git rebase --abort; git pull --no-rebase -X ours origin main; }
           git push

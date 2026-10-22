@@ -116,8 +116,16 @@ def http_get(url, *, as_json=True, timeout=60, retries=2, headers=None, method="
                 if r.headers.get("Content-Encoding") == "gzip" or raw[:2] == b"\x1f\x8b":
                     raw = gzip.decompress(raw)
                 text = raw.decode("utf-8", errors="replace")
-                return json.loads(text) if as_json else text
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, ConnectionError) as e:
+                if not as_json:
+                    return text
+                try:
+                    return json.loads(text)
+                except json.JSONDecodeError:
+                    raise RuntimeError("not JSON: " + text[:200].replace("\n", " "))
+        except RuntimeError as e:
+            last = e
+            break
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as e:
             last = e
             if isinstance(e, urllib.error.HTTPError) and e.code in (400, 401, 403, 404):
                 break
@@ -198,18 +206,27 @@ SOURCE_META = {
 }
 
 
-def record_health(source, ok, count=0, error=""):
-    health = load("sources.json", {})
-    entry = health.get(source, {})
+def record_health(source, ok, count=0, error="", detail=None):
+    """Each source writes its own health file, so parallel runs never overwrite each other."""
+    path = f"health/{source}.json"
+    entry = load(path, {})
     entry.update(SOURCE_META.get(source, {}))
     entry["last_attempt"] = now_iso()
     if ok:
         entry["last_success"] = now_iso()
         entry["records"] = count
-        entry["error"] = ""
-    else:
-        entry["error"] = clean(error, 300)
-    health[source] = entry
-    save("sources.json", health, pretty=True)
-    status = "ok" if ok else "FAILED"
-    print(f"[{source}] {status} records={count} {error}")
+    entry["error"] = clean(error, 600)
+    if detail is not None:
+        entry["detail"] = detail
+    save(path, entry, pretty=True)
+    print(f"[{source}] {'ok' if ok else 'FAILED'} records={count} {error}")
+
+
+def all_health():
+    folder = os.path.join(DATA, "health")
+    out = {}
+    if os.path.isdir(folder):
+        for f in sorted(os.listdir(folder)):
+            if f.endswith(".json"):
+                out[f[:-5]] = load(f"health/{f}", {})
+    return out
