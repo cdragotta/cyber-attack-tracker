@@ -2,8 +2,8 @@
  "url": "https://www.ransomlook.io",
  "license": "CC BY 4.0",
  "signal": "Ransomware claims (cross-check)",
- "last_attempt": "2026-10-24T11:01:59Z",
+ "last_attempt": "2026-10-24T16:06:19Z",
  "last_success": "2026-10-24T11:01:59Z",
  "records": 100,
- "error": ""
+ "error": "GET https://www.ransomlook.io/api/last/2 failed: The read operation timed out"
 }
