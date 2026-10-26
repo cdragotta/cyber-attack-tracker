@@ -2,12 +2,14 @@
  "url": "https://www.argosopentech.com",
  "license": "Argos Translate models, open source (run on GitHub)",
  "signal": "English translations",
- "last_attempt": "2026-10-26T00:27:38Z",
- "last_success": "2026-10-26T00:27:38Z",
- "records": 0,
+ "last_attempt": "2026-10-26T07:51:32Z",
+ "last_success": "2026-10-26T07:51:32Z",
+ "records": 4,
  "error": "",
  "detail": {
-  "new_translations": {},
-  "cached": 489
+  "new_translations": {
+   "it": 4
+  },
+  "cached": 492
  }
 }
