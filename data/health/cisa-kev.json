@@ -2,8 +2,8 @@
  "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
  "license": "CC0",
  "signal": "Exploited vulnerabilities",
- "last_attempt": "2026-10-25T10:06:29Z",
- "last_success": "2026-10-25T10:06:29Z",
+ "last_attempt": "2026-10-26T11:30:48Z",
+ "last_success": "2026-10-26T11:30:48Z",
  "records": 307,
  "error": ""
 }
