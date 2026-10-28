@@ -2,8 +2,8 @@
  "url": "https://github.com/pulsedive/certrss",
  "license": "Public RSS (official CERTs)",
  "signal": "Official alerts",
- "last_attempt": "2026-10-28T01:23:48Z",
- "last_success": "2026-10-28T01:23:48Z",
+ "last_attempt": "2026-10-28T08:33:30Z",
+ "last_success": "2026-10-28T08:33:30Z",
  "records": 307,
  "error": "",
  "detail": {
@@ -18,7 +18,7 @@
   "CERT.at (cert-at.en.blog.rss_2.0.xml)": "ok, 50 items",
   "Swiss NCSC (rss?lang=en&org-nr=1101)": "ok, 102 items",
   "CERT-UA (rss)": "ok, 9 items",
-  "NCSC-FI (en)": "ok, 293 items",
+  "NCSC-FI (en)": "ok, 294 items",
   "CSIRT Italia (723192)": "ok, 50 items",
   "CERT.LV (all)": "ok, 18 items"
  }
