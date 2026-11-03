@@ -2,8 +2,8 @@
  "url": "https://euvd.enisa.europa.eu",
  "license": "ENISA public service",
  "signal": "EU vulnerability IDs",
- "last_attempt": "2026-11-02T13:49:12Z",
- "last_success": "2026-11-02T13:49:12Z",
+ "last_attempt": "2026-11-03T12:58:51Z",
+ "last_success": "2026-11-03T12:58:51Z",
  "records": 251,
  "error": ""
 }
