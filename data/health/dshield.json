@@ -2,12 +2,12 @@
  "url": "https://isc.sans.edu",
  "license": "SANS ISC / DShield API, free; attribution requested",
  "signal": "Attack-map sensor observations",
- "last_attempt": "2026-11-06T13:12:39Z",
- "last_success": "2026-11-06T13:12:39Z",
+ "last_attempt": "2026-11-07T11:54:26Z",
+ "last_success": "2026-11-07T11:54:26Z",
  "records": 100,
  "error": "",
  "detail": {
-  "day": "2026-11-05",
+  "day": "2026-11-06",
   "sources_keys": [
    "attacks",
    "count",
