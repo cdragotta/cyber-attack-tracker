@@ -2,12 +2,12 @@
  "url": "https://isc.sans.edu",
  "license": "SANS ISC / DShield API, free; attribution requested",
  "signal": "Attack-map sensor observations",
- "last_attempt": "2026-11-13T13:24:55Z",
- "last_success": "2026-11-13T13:24:55Z",
+ "last_attempt": "2026-11-14T12:29:49Z",
+ "last_success": "2026-11-14T12:29:49Z",
  "records": 100,
  "error": "",
  "detail": {
-  "day": "2026-11-12",
+  "day": "2026-11-13",
   "sources_keys": [
    "attacks",
    "count",
@@ -15,7 +15,7 @@
    "ip",
    "lastseen"
   ],
-  "lookups_fresh": 0,
+  "lookups_fresh": 27,
   "ports_keys": [
    "rank",
    "records",
