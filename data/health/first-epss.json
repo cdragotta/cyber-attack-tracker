@@ -2,8 +2,8 @@
  "url": "https://www.first.org/epss",
  "license": "Free, no registration",
  "signal": "Exploit probability",
- "last_attempt": "2026-11-20T14:19:46Z",
- "last_success": "2026-11-20T14:19:46Z",
- "records": 324,
+ "last_attempt": "2026-11-21T13:41:07Z",
+ "last_success": "2026-11-21T13:41:07Z",
+ "records": 328,
  "error": ""
 }
